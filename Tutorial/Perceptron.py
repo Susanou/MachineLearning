@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import numpy as np
-from matplotlib.colors import ListedColormap
 
 class Perceptron(object):
     """
