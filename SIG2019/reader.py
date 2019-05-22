@@ -1,7 +1,16 @@
 #!/usr/bin/env python3
 
-import sys
-from . import utils
+#  Copyright (c) 2019, Cameron Hochberg
+#  All rights reserved.
+#
+# Author: Cameron Hochberg
+# Date: 05/2019
+# Homepage: https://github.com/Susanou
+# Email: cam.hochberg@gmail.com
+#
+
+import sys, time, threading
+import fonctions
 
 def main(argv):
 
@@ -12,7 +21,7 @@ def main(argv):
 
 def read(file: str, freq: dict):
     """
-    Fonction pour lire les differents fichiers inputs
+    Fonction pour lire les differents fichiers inputs et ajouter la frequence des mots
         :param file:str: nom du fichier a lire
     """
 
@@ -24,10 +33,12 @@ def read(file: str, freq: dict):
         while line:
             content = line.split(" ")
 
-            content = utils.remove_determinant(content)
+            content = fonctions.remove_determinant(content)
 
             for word in content:
-                utils.count_word(word, freq)
+                fonctions.count_word(fonctions.radical(word), freq)
+            
+    
 
 
             

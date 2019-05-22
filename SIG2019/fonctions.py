@@ -1,6 +1,16 @@
 #!/usr/bin/env python3
 
-import math, os
+#  Copyright (c) 2019, Cameron Hochberg
+#  All rights reserved.
+#
+# Author: Cameron Hochberg
+# Date: 05/2019
+# Homepage: https://github.com/Susanou
+# Email: cam.hochberg@gmail.com
+#
+
+import math, os, sys, time
+import itertools
 import mysql.connector
 
 def  count_word(word: str, freq: dict):
@@ -16,6 +26,18 @@ def  count_word(word: str, freq: dict):
         freq[word] = 1
 
 def remove_determinant(lines: list):
+    """Fonction pour enlever les determinants du texte
+    
+    Parameters
+    ----------
+    lines : list
+        Liste de mots d'une ligne du text
+    
+    Returns
+    -------
+    list
+        Renvoi la liste de mots sans les determinants
+    """
     for x in lines:
         if x == "le" or x == "la" or x == "les":
             x = None
@@ -52,10 +74,15 @@ def radical(word: str):
 
     return "".join(new)
 
-def insert_db(freq: dict, theme: int):
-    """
-    Function pour inserer les valeurs obtenues dans la base de donnee
-        :param freq:dict: dictionnaire obtenu apres avoir parouru le texte donne
+def insert_db(freq: dict, theme: str):
+    """Fonction permettant d'inserer les donnees dans la base de donnees
+    
+    Parameters
+    ----------
+    freq : dict
+        Dictionnaire des mots et de leur frequence associee
+    theme : str
+        Nom du theme associer
     """
     db = mysql.connector.connect(
         host="localhost",
@@ -82,3 +109,16 @@ def insert_db(freq: dict, theme: int):
 
     # remember to add a line to terminate the connection.
     # LIVE CONNECTION ==> DANGER
+
+
+def loading_animation(n):
+    """Function to animate de waiting time
+    """
+    animation = "|/-\\"
+
+
+    sys.stdout.write("\r Loading " + animation[n % len(animation)])
+    sys.stdout.flush()
+    time.sleep(0.5)
+
+    return n%len(animation)+1
