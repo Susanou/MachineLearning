@@ -25,6 +25,9 @@ def  count_word(word: str, freq: dict):
     else:
         freq[word] = 1
 
+    return freq
+
+    
 def remove_determinant(line: list):
     """Fonction pour enlever les determinants du texte
     
@@ -39,6 +42,8 @@ def remove_determinant(line: list):
         Renvoi la liste de mots sans les determinants
     """
 
+    print("[+] Removing determinants")
+
     determinants = [
         "le", "la", "les", "de", "des", "un", "une",
         "ce", "cet", "cette", "ces",
@@ -48,9 +53,6 @@ def remove_determinant(line: list):
     for x in line:
         if x in determinants:
             x = None
-        
-
-
     return line
 
 def remove_punctuation(txt: str):
@@ -61,6 +63,7 @@ def remove_punctuation(txt: str):
     txt : str
         texte a modifier
     """
+    print("[+] removing punctuation")
 
     if '.' in txt:
         txt.replace('.', "")
@@ -84,6 +87,9 @@ for x in line:
             x.replace(',', "")
         :returns: renvoi le radical suppose du mot
     """
+
+    print("[+] removing radicals")
+
     length = len(word)
     new = list(word)
 
@@ -124,13 +130,17 @@ def insert_db(freq: dict, theme: str):
 
     cursor.execute("SELECT * FROM Themes where nom=%s", theme)
 
-    if cursor != None:
+    if cursor == None:
+        print("[+] Inserting theme %s into DB\n", theme)
         cursor.execute("INSERT INTO `Themes` (nom) VALUES (%s)", theme)
 
     for mot, freq in freq.items:
+
+        print("[+] Inserting word %s into DB\n", mot)
         cursor.execute("INSERT INTO `word` (mot) VALUES ('%s')", mot)
         db.commit()
 
+        print("[+] Inserting the frequency %d of word %s of theme %s in DB\n", freq, mot, theme)
         cursor.execute("INSERT INTO `frequences` (mot, theme, frequence) VALUES ((SELECT id FROM word where mot = %s), (SELECT id FROM Themes where nom = %s), %d)", mot, theme, freq)
 
         db.commit()
@@ -146,7 +156,7 @@ def loading_animation(n):
     animation = "|/-\\"
 
 
-    sys.stdout.write("\r Loading " + animation[n % len(animation)])
+    sys.stdout.write("\r[+] Loading " + animation[n % len(animation)])
     sys.stdout.flush()
     time.sleep(0.5)
 

@@ -11,7 +11,7 @@
 
 import sys, time
 from multiprocessing import Pool
-from . import fonctions
+import fonctions
 
 def read(file: str, theme: str):
     """Fonction pour lire le fichier texte
@@ -31,37 +31,47 @@ def read(file: str, theme: str):
             line = f.readline()
             # while there is still something to read
             while line:
-
+                print(line)
                 # split the line to obtain single words
                 # and remove the uncesssesary words
                 content = line.split(" ")      
                 content = fonctions.remove_determinant(content)
-
+                print(content)
                 for word in content:
-                    fonctions.count_word(fonctions.radical(word), frequences)
+                    print(word)
+                    frequences = fonctions.count_word(fonctions.radical(word), frequences)
+                
+                line = f.readline()
+                print(line)
                 
             fonctions.insert_db(frequences, theme)
         
         f.close()
     except IOError:
         print("No file with that name was found\n")
+    finally:
+        return 1
         
 
 def main(argv):
     
     if argv[0] == "-h" or argv[0] == "help":
         print("usage reader.py <fileName> <themeName>\n")
+        return 0
 
-    print("Starting reading file\n")
-    with Pool(processes=1) as pool:
+    read(argv[0], argv[1])
+
+"""     with Pool(processes=1) as pool:
         res = pool.apply_async(read, (argv[0], argv[1]))
         waiting, n = True, 0
+        print("Starting reading file\n")
         while waiting:
             try:
                 waiting = not res.successful()
+                data = res.get()
             except AssertionError:
                 n = fonctions.loading_animation(n)
-        sys.stdout.write("\r Finished reading file\n")
+        sys.stdout.write("\r Finished reading file\n") """
 
 if __name__ == "__main__":
     main(sys.argv[1:])

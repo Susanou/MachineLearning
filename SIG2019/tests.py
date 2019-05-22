@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from multiprocessing import Pool
-from . import fonctions
+import fonctions
 import sys, time
 
 def f(x):
