@@ -9,39 +9,59 @@
 # Email: cam.hochberg@gmail.com
 #
 
-import sys, time, threading
-import fonctions
+import sys, time
+from multiprocessing import Pool
+from . import fonctions
+
+def read(file: str, theme: str):
+    """Fonction pour lire le fichier texte
+    
+    Parameters
+    ----------
+    file : str  
+        Nom du fichier a lire
+    theme : str
+        Nom du theme analyse
+    """
+
+    frequences = dict()     # dictionnaire [mots] = frequences
+    try:
+        f = open(file, "r")     # open the file in reading mode
+        if f.mode == 'r':
+            line = f.readline()
+            # while there is still something to read
+            while line:
+
+                # split the line to obtain single words
+                # and remove the uncesssesary words
+                content = line.split(" ")      
+                content = fonctions.remove_determinant(content)
+
+                for word in content:
+                    fonctions.count_word(fonctions.radical(word), frequences)
+                
+            fonctions.insert_db(frequences, theme)
+        
+        f.close()
+    except IOError:
+        print("No file with that name was found\n")
+        
 
 def main(argv):
-
-    frequences = dict()
-
-
-    print(argv[0])
-
-def read(file: str, freq: dict):
-    """
-    Fonction pour lire les differents fichiers inputs et ajouter la frequence des mots
-        :param file:str: nom du fichier a lire
-    """
-
-    # open file
-    f = open(file, "r")
-    if f.mode == 'r':
-        line = f.readline()
-        # while there is still something to read
-        while line:
-            content = line.split(" ")
-
-            content = fonctions.remove_determinant(content)
-
-            for word in content:
-                fonctions.count_word(fonctions.radical(word), freq)
-            
     
+    if argv[0] == "-h" or argv[0] == "help":
+        print("usage reader.py <fileName> <themeName>\n")
 
-
-            
+    print("Starting reading file\n")
+    with Pool(processes=1) as pool:
+        res = pool.apply_async(read, (argv[0], argv[1]))
+        waiting, n = True, 0
+        while waiting:
+            try:
+                waiting = not res.successful()
+            except AssertionError:
+                n = fonctions.loading_animation(n)
+        sys.stdout.write("\r Finished reading file\n")
 
 if __name__ == "__main__":
     main(sys.argv[1:])

@@ -1,0 +1,6 @@
+Ceci est un text de test.
+Juste pour voir si le programme marche bien
+on
+va voir si
+c'est
+bien le cas

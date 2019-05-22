@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 from multiprocessing import Pool
+from . import fonctions
 import sys, time
-import fonctions
 
 def f(x):
     time.sleep(10)

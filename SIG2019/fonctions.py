@@ -25,12 +25,12 @@ def  count_word(word: str, freq: dict):
     else:
         freq[word] = 1
 
-def remove_determinant(lines: list):
+def remove_determinant(line: list):
     """Fonction pour enlever les determinants du texte
     
     Parameters
     ----------
-    lines : list
+    line : list
         Liste de mots d'une ligne du text
     
     Returns
@@ -38,21 +38,50 @@ def remove_determinant(lines: list):
     list
         Renvoi la liste de mots sans les determinants
     """
-    for x in lines:
-        if x == "le" or x == "la" or x == "les":
+
+    determinants = [
+        "le", "la", "les", "de", "des", "un", "une",
+        "ce", "cet", "cette", "ces",
+        "mon", "ma", "mes", "ton", "ta", "tes", "son", "sa", "ses",
+        "notre", "votre", "leur", "nos", "vos", "leurs"
+    ]
+    for x in line:
+        if x in determinants:
             x = None
         
-        if x == "de" or x == "des":
-            x = None
+
+
+    return line
+
+def remove_punctuation(txt: str):
+    """Fonction pour enlever la ponctuation d'un texte
     
-    return lines
+    Parameters
+    ----------
+    txt : str
+        texte a modifier
+    """
+
+    if '.' in txt:
+        txt.replace('.', "")
+    if ',' in txt:
+        txt.replace(',', "")
+    if '?' in txt:
+        txt.replace('?', "")
+    if '!' in txt:
+        txt.replace('!', "")
+        
 
 def radical(word: str):
     """
     Fonction pour ne retenir que le radical du mot et eviter les problemes
     lies au genre et au nombre d'un mot
         :param word:str: le mot a coupe
-
+for x in line:
+        if '.' in x:
+            x.replace('.', "")
+        if ',' in x:
+            x.replace(',', "")
         :returns: renvoi le radical suppose du mot
     """
     length = len(word)
