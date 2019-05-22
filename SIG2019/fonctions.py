@@ -27,7 +27,7 @@ def  count_word(word: str, freq: dict):
 
     return freq
 
-    
+
 def remove_determinant(line: list):
     """Fonction pour enlever les determinants du texte
     
@@ -52,7 +52,7 @@ def remove_determinant(line: list):
     ]
     for x in line:
         if x in determinants:
-            x = None
+            line.remove(x)
     return line
 
 def remove_punctuation(txt: str):
@@ -95,18 +95,17 @@ for x in line:
 
     # enlever le genre de la fin du mot
     if word[length-1] == 'e' and length != 1:
-        new[length-1] = None
+        new.remove(word[length-1])
 
     if word[length-1] == 's' and length != 1:
-        new[length-1] = None
+        new.remove(word[length-1])
         if word[length-2] =='e':
-            new[length-2] = None
+            new.remove(word[length-2])
 
     
 
     # maybe truncate more than that?
     
-
     return "".join(new)
 
 def insert_db(freq: dict, theme: str):

@@ -28,21 +28,20 @@ def read(file: str, theme: str):
     try:
         f = open(file, "r")     # open the file in reading mode
         if f.mode == 'r':
-            line = f.readline()
+            content = f.readlines()
             # while there is still something to read
-            while line:
+            for line in content:
                 print(line)
                 # split the line to obtain single words
                 # and remove the uncesssesary words
-                content = line.split(" ")      
-                content = fonctions.remove_determinant(content)
-                print(content)
-                for word in content:
+                line = line.split(" ")      
+                line = fonctions.remove_determinant(line)
+                print(line)
+                for word in line:
                     print(word)
                     frequences = fonctions.count_word(fonctions.radical(word), frequences)
                 
-                line = f.readline()
-                print(line)
+                print("This is the new line ^^")
                 
             fonctions.insert_db(frequences, theme)
         
