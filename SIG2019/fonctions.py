@@ -76,9 +76,9 @@ def remove_punctuation(txt: str):
     print("[+] Removing punctuation")
 
     txt = txt.translate(str.maketrans('', '', punctuation))
-    txt = txt.translate({ord(i): None for i in '\n'})
+    txt = txt.rstrip()
 
-    return txt.lower()
+    return (''.join(e for e in txt if (e.isalnum() or e == ' '))).lower()
         
 
 def radical(word: str):
@@ -137,6 +137,7 @@ def insert_db(freq: dict, theme: str):
     db = mysql.connector.connect(
         host=config['mysqlDB']['host'],
         user=config['mysqlDB']['user'],
+        passwd=config['mysqlDB']['pass'],
         db=config['mysqlDB']['db']
     )
     

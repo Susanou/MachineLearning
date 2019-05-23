@@ -64,5 +64,16 @@ def main(argv):
 
     read(argv[0], argv[1])
 
+"""     print('\n Starting function')
+    with Pool(processes=1) as pool:
+        res = pool.apply_async(read, (argv[0], argv[1]))
+        waiting, n = True, 0
+        while waiting:
+            try:
+                waiting = not res.successful()
+            except AssertionError:
+                n = fonctions.loading_animation(n)
+        sys.stdout.write('\r Function complete\n') """
+
 if __name__ == "__main__":
     main(sys.argv[1:])
