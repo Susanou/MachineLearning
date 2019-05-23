@@ -31,22 +31,17 @@ def read(file: str, theme: str):
             content = f.readlines()
             # while there is still something to read
             for line in content:
-                print(line)
-                
+
                 line = fonctions.remove_punctuation(line)
-                print(line)
+
                 # split the line to obtain single words
-                # and remove the uncesssesary words
-                
+                # and remove the uncesssesary words                
                 line = line.split(" ")      
                 line = fonctions.remove_determinant(line)
-                print(line)
+
                 for word in line:
                     word = fonctions.radical(word)
-                    print(word)
                     frequences = fonctions.count_word(word, frequences)
-                
-                print("This is the new line ^^")
                 
             fonctions.insert_db(frequences, theme)
         
@@ -64,18 +59,6 @@ def main(argv):
         return 0
 
     read(argv[0], argv[1])
-
-"""     with Pool(processes=1) as pool:
-        res = pool.apply_async(read, (argv[0], argv[1]))
-        waiting, n = True, 0
-        print("Starting reading file\n")
-        while waiting:
-            try:
-                waiting = not res.successful()
-                data = res.get()
-            except AssertionError:
-                n = fonctions.loading_animation(n)
-        sys.stdout.write("\r Finished reading file\n") """
 
 if __name__ == "__main__":
     main(sys.argv[1:])

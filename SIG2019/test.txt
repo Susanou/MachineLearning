@@ -1,5 +1,5 @@
 Ceci est un texte de test.
-Juste pour voir si le programme marche bien
+Juste, pour voir si le programme marche bien;
 on
 va voir si
 c'est

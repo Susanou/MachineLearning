@@ -9,6 +9,9 @@
 # Email: cam.hochberg@gmail.com
 #
 
+from string import punctuation
+
+import configparser
 import math, os, sys, time
 import itertools
 import mysql.connector
@@ -72,20 +75,10 @@ def remove_punctuation(txt: str):
     """
     print("[+] Removing punctuation")
 
-    if "." in txt:
-        txt.replace('.', "")
-    if "," in txt:
-        txt.replace(',', "")
-    if "?" in txt:
-        txt.replace('?', "")
-    if "!" in txt:
-        txt.replace('!', "")
-    if ":" in txt:
-        txt.replace(':', "")
-    if "\n" in txt:
-        txt.replace("\n", "")
+    txt = txt.translate(str.maketrans('', '', punctuation))
+    txt = txt.translate({ord(i): None for i in '\n'})
 
-    return txt
+    return txt.lower()
         
 
 def radical(word: str):
@@ -138,37 +131,49 @@ def insert_db(freq: dict, theme: str):
 
     print("[+] Accessing DB")
 
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+
     db = mysql.connector.connect(
-        host="localhost",
-        user="fukurou",
-        passwd="C4mer0n28oa",
-        database="SIG",
+        host = config['mysqlDB']['host'],
+        user = config['mysqlDB']['user'],
+        passwd = config['mysqlDB']['pass'],
+        db = config['mysqlDB']['db']
     )
     
     cursor = db.cursor()
 
     cursor.execute("SELECT * FROM Themes where nom='%s'" % theme)
-    result = cursor.fetchall()
+    result = cursor.fetchone()
 
     if result == None:
-        print("[+] Inserting theme %s into DB\n" % theme)
-        cursor.execute("INSERT INTO `Themes` (nom) VALUES (%s)" % theme)
+        print("[+] Inserting theme %s into DB" % theme)
+        cursor.execute("INSERT INTO `Themes` (nom) VALUES ('%s')" % theme)
 
     for mot, freq in freq.items():
 
-        print("[+] Inserting word %s into DB\n", mot)
-        cursor.execute("INSERT INTO `word` (mot) VALUES ('%s')" % mot)
-        db.commit()
+        cursor.execute("SELECT word.id, word.mot, frequences.mot FROM word, frequences WHERE word.mot = '%s' AND frequences.mot = word.id" % mot)
+        result = cursor.fetchone()
 
-        print("[+] Inserting the frequency %d of word %s of theme %s in DB\n" % (freq, mot, theme))
-        cursor.execute("INSERT INTO `frequences` (mot, theme, frequence) VALUES ((SELECT id FROM word where mot = '%s'), (SELECT id FROM Themes where nom = '%s'), %d)" % (mot, theme, freq))
+        if result == None:
 
-        db.commit()
+            print("[+] Inserting word %s into DB" % mot)
+            cursor.execute("INSERT INTO `word` (mot) VALUES ('%s')" % mot)
+            db.commit()
+
+            print("[+] Inserting the frequency %d of word %s of theme %s in DB" % (freq, mot, theme))
+            cursor.execute("INSERT INTO `frequences` (mot, theme, frequence) VALUES ((SELECT id FROM word WHERE mot = '%s'), (SELECT id FROM Themes WHERE nom = '%s'), %d)" % (mot, theme, freq))
+
+            db.commit()
+        else:
+
+            print("[+] Updating frequency of word %s" % mot)
+            cursor.execute("UPDATE frequences SET frequence = frequence + %d where mot = (SELECT id FROM word WHERE mot = '%s')" % (freq, mot))
+            db.commit()
 
 
-    # remember to add a line to terminate the connection.
-    # LIVE CONNECTION ==> DANGER
-
+    cursor.close()
+    db.close()
 
 def loading_animation(n):
     """Function to animate de waiting time
