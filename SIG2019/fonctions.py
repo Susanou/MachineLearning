@@ -135,10 +135,9 @@ def insert_db(freq: dict, theme: str):
     config.read('config.ini')
 
     db = mysql.connector.connect(
-        host = config['mysqlDB']['host'],
-        user = config['mysqlDB']['user'],
-        passwd = config['mysqlDB']['pass'],
-        db = config['mysqlDB']['db']
+        host=config['mysqlDB']['host'],
+        user=config['mysqlDB']['user'],
+        db=config['mysqlDB']['db']
     )
     
     cursor = db.cursor()

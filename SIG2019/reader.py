@@ -9,7 +9,7 @@
 # Email: cam.hochberg@gmail.com
 #
 
-import sys, time
+import sys, time, os
 from multiprocessing import Pool
 import fonctions
 
@@ -54,6 +54,10 @@ def read(file: str, theme: str):
 
 def main(argv):
     
+    if argv == None:
+        print("usage reader.py <fileName> <themeName>\n")
+        return 0
+
     if argv[0] == "-h" or argv[0] == "help":
         print("usage reader.py <fileName> <themeName>\n")
         return 0
