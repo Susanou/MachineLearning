@@ -1,4 +1,4 @@
-Ceci est un text de test.
+Ceci est un texte de test.
 Juste pour voir si le programme marche bien
 on
 va voir si

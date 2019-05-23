@@ -32,14 +32,19 @@ def read(file: str, theme: str):
             # while there is still something to read
             for line in content:
                 print(line)
+                
+                line = fonctions.remove_punctuation(line)
+                print(line)
                 # split the line to obtain single words
                 # and remove the uncesssesary words
+                
                 line = line.split(" ")      
                 line = fonctions.remove_determinant(line)
                 print(line)
                 for word in line:
+                    word = fonctions.radical(word)
                     print(word)
-                    frequences = fonctions.count_word(fonctions.radical(word), frequences)
+                    frequences = fonctions.count_word(word, frequences)
                 
                 print("This is the new line ^^")
                 

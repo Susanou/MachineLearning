@@ -20,7 +20,9 @@ def  count_word(word: str, freq: dict):
         :param freq:dict: le dictionnaire utilise pour stocke les mots deja rencontres
     """
 
-    if word in freq.keys:
+    print("[+] Counting frequency of %s" % word)
+
+    if word in freq.keys():
         freq[word] += 1
     else:
         freq[word] = 1
@@ -62,33 +64,45 @@ def remove_punctuation(txt: str):
     ----------
     txt : str
         texte a modifier
-    """
-    print("[+] removing punctuation")
 
-    if '.' in txt:
+    Returns
+    -------
+    str
+        Renvoi le texte sans ponctuation
+    """
+    print("[+] Removing punctuation")
+
+    if "." in txt:
         txt.replace('.', "")
-    if ',' in txt:
+    if "," in txt:
         txt.replace(',', "")
-    if '?' in txt:
+    if "?" in txt:
         txt.replace('?', "")
-    if '!' in txt:
+    if "!" in txt:
         txt.replace('!', "")
+    if ":" in txt:
+        txt.replace(':', "")
+    if "\n" in txt:
+        txt.replace("\n", "")
+
+    return txt
         
 
 def radical(word: str):
-    """
-    Fonction pour ne retenir que le radical du mot et eviter les problemes
-    lies au genre et au nombre d'un mot
-        :param word:str: le mot a coupe
-for x in line:
-        if '.' in x:
-            x.replace('.', "")
-        if ',' in x:
-            x.replace(',', "")
-        :returns: renvoi le radical suppose du mot
+    """Fonction pour enlever les terminaisons des mots et ne garder que les radicaux
+    
+    Parameters
+    ----------
+    word : str
+        mot a stripper
+    
+    Returns
+    -------
+    str
+        Renvoi le radical du mot
     """
 
-    print("[+] removing radicals")
+    print('[+] removing radical of %s' % word)
 
     length = len(word)
     new = list(word)
@@ -96,11 +110,14 @@ for x in line:
     # enlever le genre de la fin du mot
     if word[length-1] == 'e' and length != 1:
         new.remove(word[length-1])
+        print("[-] Removing feminine")
 
     if word[length-1] == 's' and length != 1:
         new.remove(word[length-1])
+        print("[-] Removing plural")
         if word[length-2] =='e':
             new.remove(word[length-2])
+            print("[-] Removing Feminine")
 
     
 
@@ -118,29 +135,33 @@ def insert_db(freq: dict, theme: str):
     theme : str
         Nom du theme associer
     """
+
+    print("[+] Accessing DB")
+
     db = mysql.connector.connect(
         host="localhost",
         user="fukurou",
         passwd="C4mer0n28oa",
         database="SIG",
     )
-
+    
     cursor = db.cursor()
 
-    cursor.execute("SELECT * FROM Themes where nom=%s", theme)
+    cursor.execute("SELECT * FROM Themes where nom='%s'" % theme)
+    result = cursor.fetchall()
 
-    if cursor == None:
-        print("[+] Inserting theme %s into DB\n", theme)
-        cursor.execute("INSERT INTO `Themes` (nom) VALUES (%s)", theme)
+    if result == None:
+        print("[+] Inserting theme %s into DB\n" % theme)
+        cursor.execute("INSERT INTO `Themes` (nom) VALUES (%s)" % theme)
 
-    for mot, freq in freq.items:
+    for mot, freq in freq.items():
 
         print("[+] Inserting word %s into DB\n", mot)
-        cursor.execute("INSERT INTO `word` (mot) VALUES ('%s')", mot)
+        cursor.execute("INSERT INTO `word` (mot) VALUES ('%s')" % mot)
         db.commit()
 
-        print("[+] Inserting the frequency %d of word %s of theme %s in DB\n", freq, mot, theme)
-        cursor.execute("INSERT INTO `frequences` (mot, theme, frequence) VALUES ((SELECT id FROM word where mot = %s), (SELECT id FROM Themes where nom = %s), %d)", mot, theme, freq)
+        print("[+] Inserting the frequency %d of word %s of theme %s in DB\n" % (freq, mot, theme))
+        cursor.execute("INSERT INTO `frequences` (mot, theme, frequence) VALUES ((SELECT id FROM word where mot = '%s'), (SELECT id FROM Themes where nom = '%s'), %d)" % (mot, theme, freq))
 
         db.commit()
 
