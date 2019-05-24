@@ -9,11 +9,6 @@ def test(theme: str):
     config = configparser.ConfigParser()
     config.read('config.ini')
 
-    host=config['mysqlDB']['host'],
-    user=config['mysqlDB']['user'],
-    password=config['mysqlDB']['pass'],
-    database=config['mysqlDB']['db']
-
     db = mysql.connector.connect(
         host=config['mysqlDB']['host'],
         user=config['mysqlDB']['user'],

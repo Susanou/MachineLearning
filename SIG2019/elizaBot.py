@@ -151,3 +151,25 @@ gPats = [
         "Avez vous vraiment %1?",]],
     
 ]
+
+
+def interface():
+    print('SIG 2019\n-----------------------')
+    print('Parlez au programme en francais en utilisant')
+    print('majuscules et minuscules comme dans la vie courante.')
+    print('Tapez "exit" ou "quit" une fois fini')
+
+    s = ''
+    bot = Eliza()
+    while s != 'quit' or s != 'exit':
+        try:
+            s = input('> ')
+        except EOFError:
+            s = 'quit'
+        print(s)
+        while s[-1] in '!.':
+            s = s[:-1]
+        print(bot.reponse(s))
+
+if __name__ == "__main__":
+    interface()

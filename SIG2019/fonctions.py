@@ -151,7 +151,7 @@ def insert_db(freq: dict, theme: str):
     for mot, freq in freq.items():
 
         # query for frequence of a word within the theme given
-        cursor.execute("SELECT word.id, word.mot, theme.id frequences.mot FROM word, frequences WHERE word.mot = '%s' AND frequences.mot = word.id AND theme.nom ='%s' AND frequences.theme=theme.id" % (mot, theme))
+        cursor.execute("SELECT word.id, word.mot, Themes.id, frequences.mot FROM word, frequences, Themes WHERE word.mot = '%s' AND frequences.mot = word.id AND Themes.nom ='%s' AND frequences.theme=Themes.id" % (mot, theme))
         result2 = cursor.fetchone()
 
 
