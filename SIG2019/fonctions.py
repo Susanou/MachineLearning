@@ -111,9 +111,7 @@ def radical(word: str):
         if word[length-2] =='e':
             new.remove(word[length-2])
             print("[-] Removing Feminine")
-
-    
-
+            
     # maybe truncate more than that?
     
     return "".join(new)
@@ -152,10 +150,14 @@ def insert_db(freq: dict, theme: str):
 
     for mot, freq in freq.items():
 
-        cursor.execute("SELECT word.id, word.mot, frequences.mot FROM word, frequences WHERE word.mot = '%s' AND frequences.mot = word.id" % mot)
-        result = cursor.fetchone()
+        # query for frequence of a word within the theme given
+        cursor.execute("SELECT word.id, word.mot, theme.id frequences.mot FROM word, frequences WHERE word.mot = '%s' AND frequences.mot = word.id AND theme.nom ='%s' AND frequences.theme=theme.id" % (mot, theme))
+        result2 = cursor.fetchone()
 
-        if result == None:
+
+
+        # check that the word doesn't already have a frequence  associated with it
+        if result2 == None:
 
             print("[+] Inserting word %s into DB" % mot)
             cursor.execute("INSERT INTO `word` (mot) VALUES ('%s')" % mot)
@@ -165,6 +167,8 @@ def insert_db(freq: dict, theme: str):
             cursor.execute("INSERT INTO `frequences` (mot, theme, frequence) VALUES ((SELECT id FROM word WHERE mot = '%s'), (SELECT id FROM Themes WHERE nom = '%s'), %d)" % (mot, theme, freq))
 
             db.commit()
+
+        # If it already has a frequency and already exists only update the frequency within the theme
         else:
 
             print("[+] Updating frequency of word %s" % mot)
