@@ -16,7 +16,7 @@ import re
 class Eliza:
     """Class contenant les differentes fonctions du chatbot
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         self.keys = list(map(lambda x:re.compile(x[0], re.IGNORECASE),gPats))
         self.values = list(map(lambda x:x[1],gPats))
 
@@ -40,9 +40,9 @@ class Eliza:
         words = str.lower().split()
         keys = dict.keys()
 
-        for i in range(0, len(words)):
+        for i in range(0,len(words)):
             if words[i] in keys:
-                words[i] = keys[words[i]]
+                words[i] = dict[words[i]]
 
         return ' '.join(words)
 
@@ -52,12 +52,12 @@ class Eliza:
         Parameters
         ----------
         str : str
-            input de l'utilisateur
-
+            input de l'utilisateur utilise comme base pour repondre
+        
         Returns
         -------
         str
-            renvoi la reponse du bot
+            Renvoi la reponse de ELIZA
         """
 
         for i in range(0, len(self.keys)):
@@ -70,12 +70,11 @@ class Eliza:
                     num = int(rep[pos+1:pos+2])
                     rep = rep[:pos] + \
                         self.traduire(match.group(num), traductions) + \
-                            rep[pos+2:0]
+                        rep[pos+2:]
                     pos = rep.find('%')
-
-                if rep[-2:] == '?.' : rep = rep[:-2] + '.'
-                if rep[-2:] == '??' : rep = rep[:-2] + '?'
-
+                # fix munged punctuation at the end
+                if rep[-2:] == '?.': rep = rep[:-2] + '.'
+                if rep[-2:] == '??': rep = rep[:-2] + '?'
                 return rep
 
 
@@ -128,7 +127,7 @@ gPats = [
     [   "Pourquoi vous excusez-vous?",
         "Qu'est ce qui fait que vous vous excusez?"]],
 
-    [r"Qu'est ce (*.)",
+    [r"Qu'est ce (.*)",
     [   "Pourquoi demandez-vous?",
         "Comment cela vous aiderai?",
         "Qu'en pensez-vous?"]],
@@ -137,7 +136,7 @@ gPats = [
     [   "Bonjour. Ravi que vous ayez pu venir aujourd'hui.",
         "Bonjour, comment allez-vous?"]],
 
-    [r"Je pense (*.)",
+    [r"Je pense (.*)",
     [   "Doutez-vous %1?",
         "Pensez-vous vraiment %1?",
         "Mais vous n'etes pas sur %1?"]],
@@ -148,10 +147,9 @@ gPats = [
     
     [r"J'ai (.*)",
     [   "Pourquoi me dites vous que vous avez %1?",
-        "Avez vous vraiment %1?",]],
+        "Avez vous vraiment %1?",]]
     
 ]
-
 
 def interface():
     print('SIG 2019\n-----------------------')
@@ -159,17 +157,21 @@ def interface():
     print('majuscules et minuscules comme dans la vie courante.')
     print('Tapez "exit" ou "quit" une fois fini')
 
+    print('='*80)
+    print("Bonjour comment allez vous aujourd'hui?\n")
+
     s = ''
-    bot = Eliza()
-    while s != 'quit' or s != 'exit':
+    therapist = Eliza()
+    while s != 'quit':
         try:
             s = input('> ')
         except EOFError:
             s = 'quit'
-        print(s)
+            print(s)
         while s[-1] in '!.':
             s = s[:-1]
-        print(bot.reponse(s))
+        print(therapist.reponse(s))
+
 
 if __name__ == "__main__":
     interface()

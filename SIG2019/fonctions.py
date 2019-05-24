@@ -23,7 +23,7 @@ def  count_word(word: str, freq: dict):
         :param freq:dict: le dictionnaire utilise pour stocke les mots deja rencontres
     """
 
-    print("[+] Counting frequency of %s" % word)
+    print("\033[1;32;40m[+] \033[0m Counting frequency of %s" % word)
 
     if word in freq.keys():
         freq[word] += 1
@@ -47,7 +47,7 @@ def remove_determinant(line: list):
         Renvoi la liste de mots sans les determinants
     """
 
-    print("[+] Removing determinants")
+    print("\033[1;32;40m[+] \033[0m Removing determinants")
 
     determinants = [
         "le", "la", "les", "de", "des", "un", "une",
@@ -73,7 +73,7 @@ def remove_punctuation(txt: str):
     str
         Renvoi le texte sans ponctuation
     """
-    print("[+] Removing punctuation")
+    print("\033[1;32;40m[+] \033[0m Removing punctuation")
 
     txt = txt.translate(str.maketrans('', '', punctuation))
     txt = txt.rstrip()
@@ -95,7 +95,7 @@ def radical(word: str):
         Renvoi le radical du mot
     """
 
-    print('[+] removing radical of %s' % word)
+    print('\033[1;32;40m[+] \033[0m removing radical of %s' % word)
 
     length = len(word)
     new = list(word)
@@ -103,14 +103,14 @@ def radical(word: str):
     # enlever le genre de la fin du mot
     if word[length-1] == 'e' and length != 1:
         new.remove(word[length-1])
-        print("[-] Removing feminine")
+        print("\033[1;31;40m[-] \033[0m Removing feminine")
 
     if word[length-1] == 's' and length != 1:
         new.remove(word[length-1])
-        print("[-] Removing plural")
+        print("\033[1;31;40m[-] \033[0m Removing plural")
         if word[length-2] =='e':
             new.remove(word[length-2])
-            print("[-] Removing Feminine")
+            print("\033[1;31;40m[-] \033[0m Removing Feminine")
             
     # maybe truncate more than that?
     
@@ -127,7 +127,7 @@ def insert_db(freq: dict, theme: str):
         Nom du theme associer
     """
 
-    print("[+] Accessing DB")
+    print("\033[1;32;40m[+] \033[0m Accessing DB")
 
     config = configparser.ConfigParser()
     config.read('config.ini')
@@ -145,7 +145,7 @@ def insert_db(freq: dict, theme: str):
     result = cursor.fetchone()
 
     if result == None:
-        print("[+] Inserting theme %s into DB" % theme)
+        print("\033[1;31;40m[+] \033[0m Inserting theme %s into DB" % theme)
         cursor.execute("INSERT INTO `Themes` (nom) VALUES ('%s')" % theme)
 
     for mot, freq in freq.items():
@@ -159,11 +159,11 @@ def insert_db(freq: dict, theme: str):
         # check that the word doesn't already have a frequence  associated with it
         if result2 == None:
 
-            print("[+] Inserting word %s into DB" % mot)
+            print("\033[1;32;40m[+] \033[0m Inserting word %s into DB" % mot)
             cursor.execute("INSERT INTO `word` (mot) VALUES ('%s')" % mot)
             db.commit()
 
-            print("[+] Inserting the frequency %d of word %s of theme %s in DB" % (freq, mot, theme))
+            print("\033[1;32;40m[+] \033[0m Inserting the frequency %d of word %s of theme %s in DB" % (freq, mot, theme))
             cursor.execute("INSERT INTO `frequences` (mot, theme, frequence) VALUES ((SELECT id FROM word WHERE mot = '%s'), (SELECT id FROM Themes WHERE nom = '%s'), %d)" % (mot, theme, freq))
 
             db.commit()
@@ -171,7 +171,7 @@ def insert_db(freq: dict, theme: str):
         # If it already has a frequency and already exists only update the frequency within the theme
         else:
 
-            print("[+] Updating frequency of word %s" % mot)
+            print("\033[1;32;40m[+] \033[0m Updating frequency of word %s" % mot)
             cursor.execute("UPDATE frequences SET frequence = frequence + %d where mot = (SELECT id FROM word WHERE mot = '%s')" % (freq, mot))
             db.commit()
 
