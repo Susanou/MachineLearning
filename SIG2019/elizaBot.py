@@ -147,7 +147,33 @@ gPats = [
     
     [r"J'ai (.*)",
     [   "Pourquoi me dites vous que vous avez %1?",
-        "Avez vous vraiment %1?",]]
+        "Avez vous vraiment %1?",]],
+
+    [r"(.*) (?:papa|pere) (.*)",
+    [   "Parlez moi plus de votre pere?",
+        "Comment vous sentez vous a propos de votre pere?",
+        "Avez-vous des problemes pour montrer vos sentiments a vos parents?"]],
+
+    # Insert new sentences here ^
+    # Below are the cases where we have no other options
+
+    
+    [r"(.*)\?",
+    [   "Pourquoi demandez vous ca?",
+        "Pourquoi ne me le dites vous pas vous meme?",
+        "La reponse ce trouve peut etre en vous?"]],
+
+    [r"(?:quit|exit)",
+    [   "Au revoir",
+        "Ce sera 200$. Par espece ou par carte?",
+        "Merci d'etre venu me parler."]],
+
+    [r"(.*)",
+    [   "Dites m'en plus.",
+        "Je vois",
+        "%1",
+        "Pouvez vous developer un peu plus?",
+        "Comment vous sentez vous suite a cela?"]]
     
 ]
 
