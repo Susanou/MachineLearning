@@ -40,8 +40,9 @@ def read(file: str, theme: str):
                 line = fonctions.remove_determinant(line)
 
                 for word in line:
-                    word = fonctions.radical(word)
-                    frequences = fonctions.count_word(word, frequences)
+                    if word != "":
+                        word = fonctions.radical(word)
+                        frequences = fonctions.count_word(word, frequences)
                 
             fonctions.insert_db(frequences, theme)
         

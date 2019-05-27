@@ -23,7 +23,7 @@ def  count_word(word: str, freq: dict):
         :param freq:dict: le dictionnaire utilise pour stocke les mots deja rencontres
     """
 
-    print("\033[1;32;40m[+] \033[0m Counting frequency of %s" % word)
+    print("\033[1;32;40m[+] \033[0m Counting frequency of '%s'" % word)
 
     if word in freq.keys():
         freq[word] += 1
@@ -47,7 +47,7 @@ def remove_determinant(line: list):
         Renvoi la liste de mots sans les determinants
     """
 
-    print("\033[1;32;40m[+] \033[0m Removing determinants")
+    print("\033[1;31;40m[-] \033[0m Removing determinants")
 
     determinants = [
         "le", "la", "les", "de", "des", "un", "une",
@@ -73,7 +73,7 @@ def remove_punctuation(txt: str):
     str
         Renvoi le texte sans ponctuation
     """
-    print("\033[1;32;40m[+] \033[0m Removing punctuation")
+    print("\033[1;31;40m[-] \033[0m Removing punctuation")
 
     txt = txt.translate(str.maketrans('', '', punctuation))
     txt = txt.rstrip()
@@ -95,7 +95,7 @@ def radical(word: str):
         Renvoi le radical du mot
     """
 
-    print('\033[1;32;40m[+] \033[0m removing radical of %s' % word)
+    print('\033[1;31;40m[-] \033[0m removing radical of \'%s\'' % word)
 
     length = len(word)
     new = list(word)
@@ -145,34 +145,41 @@ def insert_db(freq: dict, theme: str):
     result = cursor.fetchone()
 
     if result == None:
-        print("\033[1;31;40m[+] \033[0m Inserting theme %s into DB" % theme)
+        print("\033[1;32;40m[+] \033[0m Inserting theme '%s' into DB" % theme)
         cursor.execute("INSERT INTO `Themes` (nom) VALUES ('%s')" % theme)
 
     for mot, freq in freq.items():
 
-        # query for frequence of a word within the theme given
-        cursor.execute("SELECT word.id, word.mot, Themes.id, frequences.mot FROM word, frequences, Themes WHERE word.mot = '%s' AND frequences.mot = word.id AND Themes.nom ='%s' AND frequences.theme=Themes.id" % (mot, theme))
+        # Query for already existing words
+        cursor.execute("SELECT * FROM word WHERE mot='%s'" % mot)
         result2 = cursor.fetchone()
 
+        # query for frequence of a word within the theme given
+        cursor.execute("SELECT word.id, word.mot, Themes.id, frequences.mot FROM word, frequences, Themes WHERE word.mot = '%s' AND frequences.mot = word.id AND Themes.nom ='%s' AND frequences.theme=Themes.id" % (mot, theme))
+        result3 = cursor.fetchone()
 
 
+        if result2 != None and result3 == None:
+            print("\033[1;32;40m[+] \033[0m Inserting the frequency %d of word '%s' of theme '%s' in DB" % (freq, mot, theme))
+            cursor.execute("INSERT INTO `frequences` (mot, theme, frequence) VALUES ((SELECT id FROM word WHERE mot = '%s'), (SELECT id FROM Themes WHERE nom = '%s'), %d)" % (mot, theme, freq))
+            db.commit()
+        
         # check that the word doesn't already have a frequence  associated with it
-        if result2 == None:
+        elif result2 == None and result3 == None:
 
-            print("\033[1;32;40m[+] \033[0m Inserting word %s into DB" % mot)
+            print("\033[1;32;40m[+] \033[0m Inserting word '%s' into DB" % mot)
             cursor.execute("INSERT INTO `word` (mot) VALUES ('%s')" % mot)
             db.commit()
 
-            print("\033[1;32;40m[+] \033[0m Inserting the frequency %d of word %s of theme %s in DB" % (freq, mot, theme))
+            print("\033[1;32;40m[+] \033[0m Inserting the frequency %d of word '%s' of theme '%s' in DB" % (freq, mot, theme))
             cursor.execute("INSERT INTO `frequences` (mot, theme, frequence) VALUES ((SELECT id FROM word WHERE mot = '%s'), (SELECT id FROM Themes WHERE nom = '%s'), %d)" % (mot, theme, freq))
-
             db.commit()
 
         # If it already has a frequency and already exists only update the frequency within the theme
         else:
 
-            print("\033[1;32;40m[+] \033[0m Updating frequency of word %s" % mot)
-            cursor.execute("UPDATE frequences SET frequence = frequence + %d where mot = (SELECT id FROM word WHERE mot = '%s')" % (freq, mot))
+            print("\033[1;32;40m[+] \033[0m Updating frequency of word '%s' in theme '%s'" % (mot, theme))
+            cursor.execute("UPDATE frequences SET frequence = frequence + %d where mot = (SELECT id FROM word WHERE mot = '%s') AND theme = (SELECT id FROM Themes WHERE nom = '%s')" % (freq, mot, theme))
             db.commit()
 
 
