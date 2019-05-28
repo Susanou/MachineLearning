@@ -145,13 +145,31 @@ def insert_db(freq: dict, theme: str):
         result2 = cursor.fetchone()
 
         # query for frequence of a word within the theme given
-        cursor.execute("SELECT word.id, word.mot, themes.id, frequences.mot FROM word, frequences, themes WHERE word.mot = '%s' AND frequences.mot = word.id AND themes.nom ='%s' AND frequences.theme=themes.id" % (mot, theme))
+        query_result3=(
+            """
+            SELECT word.id, word.mot, themes.id, frequences.mot 
+            FROM word, frequences, themes 
+            WHERE word.mot = '%s' AND frequences.mot = word.id 
+                AND themes.nom ='%s' AND frequences.theme=themes.id
+            """
+        )
+        cursor.execute(query_result3, (mot, theme))
         result3 = cursor.fetchone()
 
 
         if result2 != None and result3 == None:
             print("\033[1;32;40m[+] \033[0m Inserting the frequency %d of word '%s' of theme '%s' in DB" % (freq, mot, theme))
-            cursor.execute("INSERT INTO `frequences` (mot, theme, frequence) VALUES ((SELECT id FROM word WHERE mot = '%s'), (SELECT id FROM themes WHERE nom = '%s'), %d)" % (mot, theme, freq))
+            query = (
+                """
+                INSERT INTO `frequences` (mot, theme, frequence)
+                VALUES (
+                    (SELECT id FROM word WHERE mot = '%s'),
+                    (SELECT id FROM themes WHERE nom = '%s'),
+                     %d
+                )
+                """
+            )
+            cursor.execute(query, (mot, theme, freq))
             db.commit()
         
         # check that the word doesn't already have a frequence  associated with it
@@ -162,14 +180,31 @@ def insert_db(freq: dict, theme: str):
             db.commit()
 
             print("\033[1;32;40m[+] \033[0m Inserting the frequency %d of word '%s' of theme '%s' in DB" % (freq, mot, theme))
-            cursor.execute("INSERT INTO `frequences` (mot, theme, frequence) VALUES ((SELECT id FROM word WHERE mot = '%s'), (SELECT id FROM themes WHERE nom = '%s'), %d)" % (mot, theme, freq))
+            query = (
+                """
+                INSERT INTO `frequences` (mot, theme, frequence)
+                VALUES (
+                    (SELECT id FROM word WHERE mot = '%s'),
+                    (SELECT id FROM themes WHERE nom = '%s'),
+                     %d
+                )
+                """
+            )
+            cursor.execute(query, (mot, theme, freq))
             db.commit()
 
         # If it already has a frequency and already exists only update the frequency within the theme
         else:
 
             print("\033[1;32;40m[+] \033[0m Updating frequency of word '%s' in theme '%s'" % (mot, theme))
-            cursor.execute("UPDATE frequences SET frequence = frequence + %d where mot = (SELECT id FROM word WHERE mot = '%s') AND theme = (SELECT id FROM themes WHERE nom = '%s')" % (freq, mot, theme))
+            query=(
+                """
+                UPDATE frequences SET frequence = frequence + %d 
+                WHERE mot = (SELECT id FROM word WHERE mot = '%s') 
+                AND theme = (SELECT id FROM themes WHERE nom = '%s')
+                """
+            )
+            cursor.execute(query, (freq, mot, theme))
             db.commit()
 
 
@@ -236,7 +271,65 @@ def get_frequence(word:str, theme:str):
     cursor.execute(total_query, (theme))
     total = cursor.fetchone()[0]
 
-    return freq/total
+    return freq/total, total
+
+def interval(word:str, theme:str):
+    """Fonction permettant de calculer l'interval de confiance
+        pour un mot en fonction du theme
+    
+    Parameters
+    ----------
+    word : str
+        mot dont on veut calculer l'intervalle de confiance
+    theme : str
+        theme associer au mot et a l'interval en question
+
+    """
+    
+    freq, total = get_frequence(word, theme)
+
+    bottom = freq - 1.96*math.sqrt(freq*(1-freq)/total)
+    top = freq + 1.96*math.sqrt(freq*(1-freq)/total)
+
+    db = connectDB()
+    cursor = db.cursor()
+
+    query=(
+        """
+        SELECT id FROM intervals 
+        WHERE mot=(SELECT id FROM word WHERE mot='%s') 
+        AND theme=(SELECT id FROM themes WHERE nom='%s')
+        """
+    )
+
+    cursor.execute(query, (bottom, top, word, theme))
+    result = cursor.fetchone()
+
+    if result == None:
+        insert_query =(
+        """
+            INSERT INTO `intervals` (bottom, top, mot, theme) VALUES
+            (
+                %d,
+                %d,
+                (SELECT id FROM word WHERE mot='%s'),
+                (SELECT id FROM themes WHERE nom='%s')
+            )
+        """)
+
+        cursor.execute(insert_query, (bottom, top, word, theme))
+        db.commit()
+    else:
+        update_query=(
+            """
+            UPDATE intervals SET top = %d, bottom = %d
+            WHERE mot=(SELECT id FROM word WHERE mot='%s') AND
+            theme=(SELECT id FROM themes WHERE nom='%s')
+            """
+        )
+
+        cursor.execute(update_query, (bottom, top, word, theme))
+        db.commit()
 
 
 

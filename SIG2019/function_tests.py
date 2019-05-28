@@ -82,18 +82,22 @@ def query_test(word: str, theme: str):
     occurence_query = ("""
         SELECT frequence FROM frequences
         where frequences.mot=(select id from word where mot=%s)
-        and frequences.theme=(select id from themes where nom=%s)
+        and frequences.theme=(select id from themes where nom=%s )
         
         """)
 
     cursor.execute(occurence_query, (word, theme))
     freq = cursor.fetchone()[0]
 
+    string = ("%s")
+
+    print(string % (theme))
+
     total_query = ("""
         select n from total
-        where theme='pardon'
+        where theme='%s'
     """)
-    cursor.execute(total_query, (theme))
+    cursor.execute(total_query % theme)
     total = cursor.fetchone()[0]
 
     print(freq)
@@ -101,5 +105,10 @@ def query_test(word: str, theme: str):
 
     print("resultat= ", freq/total)
 
+    return freq/total, total
+
 if __name__ == "__main__":
-    query_test("on", "pardon")
+    freq, total = query_test("on", "pardon")
+
+    print(freq)
+    print(total)
