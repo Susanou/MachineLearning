@@ -39,11 +39,6 @@ def test(theme: str):
     print("\033[1;36;40m Bright Cyan    \033[0m 1;36;40m            \033[0;36;47m Cyan       \033[0m 0;36;47m               \033[0;37;47m Black      \033[0m 0;37;47m")
     print("\033[1;37;40m White          \033[0m 1;37;40m            \033[0;37;40m Light Grey \033[0m 0;37;40m               \033[0;37;48m Black      \033[0m 0;37;48m")
 
-
-if __name__ == "__main__":
-    test("test")
-
-
 def loading_animation(n):
     """Function to animate de waiting time
     """
@@ -55,3 +50,56 @@ def loading_animation(n):
     time.sleep(0.5)
 
     return n%len(animation)+1
+
+def connectDB():
+    """Fonction utilisee pour se connecter a la base de donnee
+    
+    Returns
+    -------
+    mysql.connector
+        database object to use for cursor and commits
+    """
+
+    print("\033[1;32;40m[+] \033[0m Accessing DB")
+
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+
+    db = mysql.connector.connect(
+        host=config['mysqlDB']['host'],
+        user=config['mysqlDB']['user'],
+        passwd=config['mysqlDB']['pass'],
+        db=config['mysqlDB']['db']
+    )
+    
+    return db
+
+def query_test(word: str, theme: str):
+    db = connectDB()
+    
+    cursor = db.cursor()
+
+    occurence_query = ("""
+        SELECT frequence FROM frequences
+        where frequences.mot=(select id from word where mot=%s)
+        and frequences.theme=(select id from themes where nom=%s)
+        
+        """)
+
+    cursor.execute(occurence_query, (word, theme))
+    freq = cursor.fetchone()[0]
+
+    total_query = ("""
+        select n from total
+        where theme='pardon'
+    """)
+    cursor.execute(total_query, (theme))
+    total = cursor.fetchone()[0]
+
+    print(freq)
+    print(total)
+
+    print("resultat= ", freq/total)
+
+if __name__ == "__main__":
+    query_test("on", "pardon")

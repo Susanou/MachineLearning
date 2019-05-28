@@ -127,6 +127,64 @@ def insert_db(freq: dict, theme: str):
         Nom du theme associer
     """
 
+    db = connectDB()
+    
+    cursor = db.cursor()
+
+    cursor.execute("SELECT * FROM themes where nom='%s'" % theme)
+    result = cursor.fetchone()
+
+    if result == None:
+        print("\033[1;32;40m[+] \033[0m Inserting theme '%s' into DB" % theme)
+        cursor.execute("INSERT INTO `themes` (nom) VALUES ('%s')" % theme)
+
+    for mot, freq in freq.items():
+
+        # Query for already existing words
+        cursor.execute("SELECT * FROM word WHERE mot='%s'" % mot)
+        result2 = cursor.fetchone()
+
+        # query for frequence of a word within the theme given
+        cursor.execute("SELECT word.id, word.mot, themes.id, frequences.mot FROM word, frequences, themes WHERE word.mot = '%s' AND frequences.mot = word.id AND themes.nom ='%s' AND frequences.theme=themes.id" % (mot, theme))
+        result3 = cursor.fetchone()
+
+
+        if result2 != None and result3 == None:
+            print("\033[1;32;40m[+] \033[0m Inserting the frequency %d of word '%s' of theme '%s' in DB" % (freq, mot, theme))
+            cursor.execute("INSERT INTO `frequences` (mot, theme, frequence) VALUES ((SELECT id FROM word WHERE mot = '%s'), (SELECT id FROM themes WHERE nom = '%s'), %d)" % (mot, theme, freq))
+            db.commit()
+        
+        # check that the word doesn't already have a frequence  associated with it
+        elif result2 == None and result3 == None:
+
+            print("\033[1;32;40m[+] \033[0m Inserting word '%s' into DB" % mot)
+            cursor.execute("INSERT INTO `word` (mot) VALUES ('%s')" % mot)
+            db.commit()
+
+            print("\033[1;32;40m[+] \033[0m Inserting the frequency %d of word '%s' of theme '%s' in DB" % (freq, mot, theme))
+            cursor.execute("INSERT INTO `frequences` (mot, theme, frequence) VALUES ((SELECT id FROM word WHERE mot = '%s'), (SELECT id FROM themes WHERE nom = '%s'), %d)" % (mot, theme, freq))
+            db.commit()
+
+        # If it already has a frequency and already exists only update the frequency within the theme
+        else:
+
+            print("\033[1;32;40m[+] \033[0m Updating frequency of word '%s' in theme '%s'" % (mot, theme))
+            cursor.execute("UPDATE frequences SET frequence = frequence + %d where mot = (SELECT id FROM word WHERE mot = '%s') AND theme = (SELECT id FROM themes WHERE nom = '%s')" % (freq, mot, theme))
+            db.commit()
+
+
+    cursor.close()
+    db.close()
+
+def connectDB():
+    """Fonction utilisee pour se connecter a la base de donnee
+    
+    Returns
+    -------
+    mysql.connector
+        database object to use for cursor and commits
+    """
+
     print("\033[1;32;40m[+] \033[0m Accessing DB")
 
     config = configparser.ConfigParser()
@@ -139,52 +197,48 @@ def insert_db(freq: dict, theme: str):
         db=config['mysqlDB']['db']
     )
     
+    return db
+
+def get_frequence(word:str, theme:str):
+    """Fonction permettant de recuperer la frequence d'un mot dans la base de donnee
+    
+    Parameters
+    ----------
+    word : str
+        Mot dont on veut la frequence
+    theme : str
+        Theme d'ou on veut la frequence
+
+    Returns
+    -------
+    int
+        Returns the frequency of the word given
+    """
+    
+    db = connectDB()
+    
     cursor = db.cursor()
 
-    cursor.execute("SELECT * FROM Themes where nom='%s'" % theme)
-    result = cursor.fetchone()
-
-    if result == None:
-        print("\033[1;32;40m[+] \033[0m Inserting theme '%s' into DB" % theme)
-        cursor.execute("INSERT INTO `Themes` (nom) VALUES ('%s')" % theme)
-
-    for mot, freq in freq.items():
-
-        # Query for already existing words
-        cursor.execute("SELECT * FROM word WHERE mot='%s'" % mot)
-        result2 = cursor.fetchone()
-
-        # query for frequence of a word within the theme given
-        cursor.execute("SELECT word.id, word.mot, Themes.id, frequences.mot FROM word, frequences, Themes WHERE word.mot = '%s' AND frequences.mot = word.id AND Themes.nom ='%s' AND frequences.theme=Themes.id" % (mot, theme))
-        result3 = cursor.fetchone()
-
-
-        if result2 != None and result3 == None:
-            print("\033[1;32;40m[+] \033[0m Inserting the frequency %d of word '%s' of theme '%s' in DB" % (freq, mot, theme))
-            cursor.execute("INSERT INTO `frequences` (mot, theme, frequence) VALUES ((SELECT id FROM word WHERE mot = '%s'), (SELECT id FROM Themes WHERE nom = '%s'), %d)" % (mot, theme, freq))
-            db.commit()
+    occurence_query = ("""
+        SELECT frequence FROM frequences
+        where frequences.mot=(select id from word where mot=%s)
+        and frequences.theme=(select id from themes where nom=%s)
         
-        # check that the word doesn't already have a frequence  associated with it
-        elif result2 == None and result3 == None:
+        """)
 
-            print("\033[1;32;40m[+] \033[0m Inserting word '%s' into DB" % mot)
-            cursor.execute("INSERT INTO `word` (mot) VALUES ('%s')" % mot)
-            db.commit()
+    cursor.execute(occurence_query, (word, theme))
+    freq = cursor.fetchone()[0]
 
-            print("\033[1;32;40m[+] \033[0m Inserting the frequency %d of word '%s' of theme '%s' in DB" % (freq, mot, theme))
-            cursor.execute("INSERT INTO `frequences` (mot, theme, frequence) VALUES ((SELECT id FROM word WHERE mot = '%s'), (SELECT id FROM Themes WHERE nom = '%s'), %d)" % (mot, theme, freq))
-            db.commit()
+    total_query = ("""
+        SELECT n from total
+        WHERE  Theme=%s
+    """)
+    cursor.execute(total_query, (theme))
+    total = cursor.fetchone()[0]
 
-        # If it already has a frequency and already exists only update the frequency within the theme
-        else:
-
-            print("\033[1;32;40m[+] \033[0m Updating frequency of word '%s' in theme '%s'" % (mot, theme))
-            cursor.execute("UPDATE frequences SET frequence = frequence + %d where mot = (SELECT id FROM word WHERE mot = '%s') AND theme = (SELECT id FROM Themes WHERE nom = '%s')" % (freq, mot, theme))
-            db.commit()
+    return freq/total
 
 
-    cursor.close()
-    db.close()
 
 def loading_animation(n):
     """Function to animate de waiting time
