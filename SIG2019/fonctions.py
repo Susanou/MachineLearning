@@ -127,6 +127,8 @@ def insert_db(freq: dict, theme: str):
         Nom du theme associer
     """
 
+    freq2 = freq # variable needed so that we go over the dict a second time
+    
     db = connectDB()
     
     cursor = db.cursor()
@@ -149,11 +151,11 @@ def insert_db(freq: dict, theme: str):
             """
             SELECT word.id, word.mot, themes.id, frequences.mot 
             FROM word, frequences, themes 
-            WHERE word.mot = '%s' AND frequences.mot = word.id 
-                AND themes.nom ='%s' AND frequences.theme=themes.id
+            WHERE word.mot='%s' AND frequences.mot = word.id 
+                AND themes.nom='%s' AND frequences.theme=themes.id
             """
         )
-        cursor.execute(query_result3, (mot, theme))
+        cursor.execute(query_result3 % (mot, theme))
         result3 = cursor.fetchone()
 
 
@@ -163,13 +165,14 @@ def insert_db(freq: dict, theme: str):
                 """
                 INSERT INTO `frequences` (mot, theme, frequence)
                 VALUES (
-                    (SELECT id FROM word WHERE mot = '%s'),
-                    (SELECT id FROM themes WHERE nom = '%s'),
-                     %d
+                    (SELECT id FROM word WHERE mot='%s'),
+                    (SELECT id FROM themes WHERE nom='%s'),
+                    %d
                 )
                 """
             )
-            cursor.execute(query, (mot, theme, freq))
+
+            cursor.execute(query % (mot, theme, freq))
             db.commit()
         
         # check that the word doesn't already have a frequence  associated with it
@@ -184,13 +187,13 @@ def insert_db(freq: dict, theme: str):
                 """
                 INSERT INTO `frequences` (mot, theme, frequence)
                 VALUES (
-                    (SELECT id FROM word WHERE mot = '%s'),
-                    (SELECT id FROM themes WHERE nom = '%s'),
+                    (SELECT id FROM word WHERE mot='%s'),
+                    (SELECT id FROM themes WHERE nom='%s'),
                      %d
                 )
                 """
             )
-            cursor.execute(query, (mot, theme, freq))
+            cursor.execute(query % (mot, theme, freq))
             db.commit()
 
         # If it already has a frequency and already exists only update the frequency within the theme
@@ -200,12 +203,17 @@ def insert_db(freq: dict, theme: str):
             query=(
                 """
                 UPDATE frequences SET frequence = frequence + %d 
-                WHERE mot = (SELECT id FROM word WHERE mot = '%s') 
-                AND theme = (SELECT id FROM themes WHERE nom = '%s')
+                WHERE mot = (SELECT id FROM word WHERE mot='%s') 
+                AND theme = (SELECT id FROM themes WHERE nom='%s')
                 """
             )
-            cursor.execute(query, (freq, mot, theme))
+            cursor.execute(query % (freq, mot, theme))
             db.commit()
+        
+
+    # Second loop to modify the interval values after all of the words are inserteds
+    for mot, freq in freq2.items():  
+        interval_insert(db, mot, theme)
 
 
     cursor.close()
@@ -234,11 +242,13 @@ def connectDB():
     
     return db
 
-def get_frequence(word:str, theme:str):
+def get_frequence(db, word:str, theme:str):
     """Fonction permettant de recuperer la frequence d'un mot dans la base de donnee
     
     Parameters
     ----------
+    db : mysql.connector
+        Lien pour la base de donne pour eviter le surplus de connection
     word : str
         Mot dont on veut la frequence
     theme : str
@@ -250,35 +260,35 @@ def get_frequence(word:str, theme:str):
         Returns the frequency of the word given
     """
     
-    db = connectDB()
-    
     cursor = db.cursor()
 
     occurence_query = ("""
         SELECT frequence FROM frequences
-        where frequences.mot=(select id from word where mot=%s)
-        and frequences.theme=(select id from themes where nom=%s)
+        where frequences.mot=(select id from word where mot='%s')
+        and frequences.theme=(select id from themes where nom='%s')
         
         """)
 
-    cursor.execute(occurence_query, (word, theme))
+    cursor.execute(occurence_query % (word, theme))
     freq = cursor.fetchone()[0]
 
     total_query = ("""
         SELECT n from total
-        WHERE  Theme=%s
+        WHERE  Theme='%s'
     """)
-    cursor.execute(total_query, (theme))
-    total = cursor.fetchone()[0]
+    cursor.execute(total_query % (theme))
+    total = float(cursor.fetchone()[0])
 
     return freq/total, total
 
-def interval(word:str, theme:str):
+def interval_insert(db, word:str, theme:str):
     """Fonction permettant de calculer l'interval de confiance
         pour un mot en fonction du theme
     
     Parameters
     ----------
+    db : mysql.connector
+        Lien pour la base de donne pour eviter le surplus de connection
     word : str
         mot dont on veut calculer l'intervalle de confiance
     theme : str
@@ -286,12 +296,13 @@ def interval(word:str, theme:str):
 
     """
     
-    freq, total = get_frequence(word, theme)
+    freq, total = get_frequence(db, word, theme)
 
+    # Use the equation for confidance interval to calculate
+    # bottom and top values of the interval
     bottom = freq - 1.96*math.sqrt(freq*(1-freq)/total)
     top = freq + 1.96*math.sqrt(freq*(1-freq)/total)
 
-    db = connectDB()
     cursor = db.cursor()
 
     query=(
@@ -302,33 +313,35 @@ def interval(word:str, theme:str):
         """
     )
 
-    cursor.execute(query, (bottom, top, word, theme))
+    cursor.execute(query % (word, theme))
     result = cursor.fetchone()
 
     if result == None:
+        print("\033[1;32;40m[+] \033[0m Inserting 95 confidance interval for word '%s'" % word)
         insert_query =(
         """
             INSERT INTO `intervals` (bottom, top, mot, theme) VALUES
             (
-                %d,
-                %d,
+                %f,
+                %f,
                 (SELECT id FROM word WHERE mot='%s'),
                 (SELECT id FROM themes WHERE nom='%s')
             )
         """)
 
-        cursor.execute(insert_query, (bottom, top, word, theme))
+        cursor.execute(insert_query % (bottom, top, word, theme))
         db.commit()
     else:
+        print("\033[1;32;40m[+] \033[0m Updating 95 confidance interval for word '%s'" % word)
         update_query=(
             """
-            UPDATE intervals SET top = %d, bottom = %d
+            UPDATE intervals SET bottom = %f, top = %f
             WHERE mot=(SELECT id FROM word WHERE mot='%s') AND
             theme=(SELECT id FROM themes WHERE nom='%s')
             """
         )
 
-        cursor.execute(update_query, (bottom, top, word, theme))
+        cursor.execute(update_query % (bottom, top, word, theme))
         db.commit()
 
 
