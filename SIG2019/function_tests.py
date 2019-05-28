@@ -3,6 +3,7 @@
 import mysql.connector
 import sys, time
 import configparser
+import fonctions
 
 def test(theme: str):
 
@@ -108,7 +109,9 @@ def query_test(word: str, theme: str):
     return freq/total, total
 
 if __name__ == "__main__":
-    freq, total = query_test("on", "pardon")
-
-    print(freq)
-    print(total)
+    test = fonctions.get_interval("ceci", "test")
+    bottom = test[0]
+    top = test[1]
+    print(test)
+    print(bottom)
+    print(top)

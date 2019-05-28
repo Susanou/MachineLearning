@@ -32,7 +32,6 @@ def  count_word(word: str, freq: dict):
 
     return freq
 
-
 def remove_determinant(line: list):
     """Fonction pour enlever les determinants du texte
     
@@ -78,8 +77,7 @@ def remove_punctuation(txt: str):
     txt = txt.translate(str.maketrans('', '', punctuation))
     txt = txt.rstrip()
 
-    return (''.join(e for e in txt if (e.isalnum() or e == ' '))).lower()
-        
+    return (''.join(e for e in txt if (e.isalnum() or e == ' '))).lower()        
 
 def radical(word: str):
     """Fonction pour enlever les terminaisons des mots et ne garder que les radicaux
@@ -115,6 +113,29 @@ def radical(word: str):
     # maybe truncate more than that?
     
     return "".join(new)
+
+def connectDB():
+    """Fonction utilisee pour se connecter a la base de donnee
+    
+    Returns
+    -------
+    mysql.connector
+        database object to use for cursor and commits
+    """
+
+    print("\033[1;32;40m[+] \033[0m Accessing DB")
+
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+
+    db = mysql.connector.connect(
+        host=config['mysqlDB']['host'],
+        user=config['mysqlDB']['user'],
+        passwd=config['mysqlDB']['pass'],
+        db=config['mysqlDB']['db']
+    )
+    
+    return db
 
 def insert_db(freq: dict, theme: str):
     """Fonction permettant d'inserer les donnees dans la base de donnees
@@ -219,29 +240,6 @@ def insert_db(freq: dict, theme: str):
     cursor.close()
     db.close()
 
-def connectDB():
-    """Fonction utilisee pour se connecter a la base de donnee
-    
-    Returns
-    -------
-    mysql.connector
-        database object to use for cursor and commits
-    """
-
-    print("\033[1;32;40m[+] \033[0m Accessing DB")
-
-    config = configparser.ConfigParser()
-    config.read('config.ini')
-
-    db = mysql.connector.connect(
-        host=config['mysqlDB']['host'],
-        user=config['mysqlDB']['user'],
-        passwd=config['mysqlDB']['pass'],
-        db=config['mysqlDB']['db']
-    )
-    
-    return db
-
 def get_frequence(db, word:str, theme:str):
     """Fonction permettant de recuperer la frequence d'un mot dans la base de donnee
     
@@ -278,6 +276,8 @@ def get_frequence(db, word:str, theme:str):
     """)
     cursor.execute(total_query % (theme))
     total = float(cursor.fetchone()[0])
+
+    db.close()
 
     return freq/total, total
 
@@ -344,16 +344,68 @@ def interval_insert(db, word:str, theme:str):
         cursor.execute(update_query % (bottom, top, word, theme))
         db.commit()
 
+    db.close()
 
-
-def loading_animation(n):
-    """Function to animate de waiting time
+def get_themes():
+    """Fonction nous permettant d'obtenir tous les themes enregistres
+    
+    Returns
+    -------
+    list    
+        Renvoi une liste de tous les themes enregistres
     """
-    animation = "|/-\\"
+    db = connectDB()
+    cursor = db.cursor()
 
+    cursor.execute("SELECT nom from themes")
+    themes=cursor.fetchall()
 
-    sys.stdout.write("\r[+] Loading " + animation[n % len(animation)])
-    sys.stdout.flush()
-    time.sleep(0.5)
+    db.close()
 
-    return n%len(animation)+1
+    return themes
+
+def get_interval(word:str, theme:str):
+    """Fonction permettant d'obtenir l'interval de confiance 
+        d'un mot en fonction du theme
+    
+    Parameters
+    ----------
+    word : str
+        Mot dont on veut l'interval de confiance
+    theme : str
+        Theme ou l'on veut l'interval de confiance
+
+    Returns
+    -------
+    tuple
+        Renvoi un tuple de longueur 2 avec pour indices
+            1. La valeur inferieure de l'interval
+            2. La valeur superieur de l'interval
+    """
+    
+    db = connectDB()
+    cursor = db.cursor()
+
+    query =(
+        """
+        SELECT bottom, top FROM intervals
+        WHERE mot=(SELECT id FROM word WHERE mot='%s') AND
+        theme=(SELECT id FROM themes WHERE nom='%s')
+        """
+    )
+
+    cursor.execute(query % (word, theme))
+    return cursor.fetchone()
+
+def is_in_interval(word:str, freq:float):
+    themes = get_themes()
+
+    for theme in themes:
+        interval = get_interval(word, theme)
+        bottom = interval[0]
+        top = interval[1]
+
+        if freq >= bottom and freq <= top:
+            return True
+    
+    return False

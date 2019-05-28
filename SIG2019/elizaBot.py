@@ -12,6 +12,7 @@
 import random
 import string
 import re
+import functions
 
 class Eliza:
     """Class contenant les differentes fonctions du chatbot
@@ -76,6 +77,9 @@ class Eliza:
                 if rep[-2:] == '?.': rep = rep[:-2] + '.'
                 if rep[-2:] == '??': rep = rep[:-2] + '?'
                 return rep
+
+        # def search(self, str:str):
+            
 
 
 # Dictionnaire avec des conjugaisons communes devant etre changees
