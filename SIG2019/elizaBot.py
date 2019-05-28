@@ -12,7 +12,7 @@
 import random
 import string
 import re
-import functions
+import fonctions
 
 class Eliza:
     """Class contenant les differentes fonctions du chatbot
@@ -20,6 +20,7 @@ class Eliza:
     def __init__(self):
         self.keys = list(map(lambda x:re.compile(x[0], re.IGNORECASE),gPats))
         self.values = list(map(lambda x:x[1],gPats))
+        self.freq = dict()
 
     def traduire(self, str:str, dict:dict):
         """Fonction permettant de 'traduire' certains mots
@@ -78,8 +79,29 @@ class Eliza:
                 if rep[-2:] == '??': rep = rep[:-2] + '?'
                 return rep
 
-        # def search(self, str:str):
-            
+    def search(self, str:str):
+        """Fonction pour chercher le theme de la phrase
+        
+        Parameters
+        ----------
+        str : str
+            phrase de l'utilisateur
+        """
+        line = fonctions.remove_punctuation(line)
+
+        # split the line to obtain single words
+        # and remove the uncesssesary words                
+        line = line.split(" ")      
+        line = fonctions.remove_determinant(line)
+
+        for word in line:
+            self.freq = fonctions.count_word(word, self.freq)
+
+        for word, freq in self.freq.items():
+            if fonctions.in_in_interval(word, freq):
+                print("is in interval")
+            else:
+                print("is not in interval")
 
 
 # Dictionnaire avec des conjugaisons communes devant etre changees

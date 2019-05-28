@@ -398,6 +398,22 @@ def get_interval(word:str, theme:str):
     return cursor.fetchone()
 
 def is_in_interval(word:str, freq:float):
+    """Fonction qui pour savoir si un mot a une frequence se trouvant bien
+        dans un interval de confiance d'un des themes
+    
+    Parameters
+    ----------
+    word : str
+        Mot que l'on teste
+    freq : float
+        Frequence du mot dans le texte
+    
+    Returns
+    -------
+    bool
+        Renvoi si oui ou non le mot fait partie d'un interval de confiance
+        ainsi que le theme associe
+    """
     themes = get_themes()
 
     for theme in themes:
@@ -406,6 +422,6 @@ def is_in_interval(word:str, freq:float):
         top = interval[1]
 
         if freq >= bottom and freq <= top:
-            return True
+            return True # add a way to check the theme for both cases
     
     return False
