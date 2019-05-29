@@ -12,7 +12,7 @@
 import random
 import string
 import re
-import fonctions
+import fonctions_bot as fonctions
 
 class Eliza:
     """Class contenant les differentes fonctions du chatbot
@@ -79,7 +79,7 @@ class Eliza:
                 if rep[-2:] == '??': rep = rep[:-2] + '?'
                 return rep
 
-    def search(self, str:str):
+    def search(self, s:str):
         """Fonction pour chercher le theme de la phrase
         
         Parameters
@@ -87,7 +87,7 @@ class Eliza:
         str : str
             phrase de l'utilisateur
         """
-        line = fonctions.remove_punctuation(line)
+        line = fonctions.remove_punctuation(s)
 
         # split the line to obtain single words
         # and remove the uncesssesary words                
@@ -98,10 +98,15 @@ class Eliza:
             self.freq = fonctions.count_word(word, self.freq)
 
         for word, freq in self.freq.items():
-            if fonctions.in_in_interval(word, freq):
+            if fonctions.is_in_interval(word, freq):
                 print("is in interval")
+                return 1
             else:
                 print("is not in interval")
+        
+        self.reponse(s)
+
+        
 
 
 # Dictionnaire avec des conjugaisons communes devant etre changees
@@ -222,7 +227,7 @@ def interface():
             print(s)
         while s[-1] in '!.':
             s = s[:-1]
-        print(therapist.reponse(s))
+        print(therapist.search(s))
 
 
 if __name__ == "__main__":

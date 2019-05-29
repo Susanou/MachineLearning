@@ -12,7 +12,7 @@
 from multiprocessing import Pool
 
 import sys, time, os
-import fonctions
+import fonctions_reader as fonctions
 
 def read(file: str, theme: str):
     """Fonction pour lire le fichier texte

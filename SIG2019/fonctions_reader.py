@@ -397,6 +397,40 @@ def get_interval(word:str, theme:str):
     cursor.execute(query % (word, theme))
     return cursor.fetchone()
 
+def word_in_theme(word:str, theme:str):
+    """Fonction nous permettant de savoir si un mot apparait dans un theme donne
+    
+    Parameters
+    ----------
+    word : str
+        mot que l'on veut checker
+    theme : str
+        theme ou l'on veut savoir si le mot existe ou pas
+    
+    Returns
+    -------
+    bool
+        Renvoi True ou False en fonction de si le mot existe ou pas
+    """
+    db = connectDB()
+    cursor = db.cursor()
+
+    query = (
+        """
+            SELECT word.id, word.mot, themes.id, frequences.mot 
+            FROM word, frequences, themes 
+            WHERE word.mot='%s' AND frequences.mot = word.id 
+            AND themes.nom='%s' AND frequences.theme=themes.id
+        """
+    )
+
+    cursor.execute(query % (word, theme))
+
+    if cursor.fetchone() != None:
+        return True
+    else:
+        return False
+
 def is_in_interval(word:str, freq:float):
     """Fonction qui pour savoir si un mot a une frequence se trouvant bien
         dans un interval de confiance d'un des themes
@@ -417,11 +451,12 @@ def is_in_interval(word:str, freq:float):
     themes = get_themes()
 
     for theme in themes:
-        interval = get_interval(word, theme)
-        bottom = interval[0]
-        top = interval[1]
+        if word_in_theme(word, theme[0]):    
+            interval = get_interval(word, theme[0])
+            bottom = interval[0]
+            top = interval[1]
 
-        if freq >= bottom and freq <= top:
-            return True # add a way to check the theme for both cases
-    
+            if freq >= bottom and freq <= top:
+                return True # add a way to check the theme for both cases
+        
     return False
