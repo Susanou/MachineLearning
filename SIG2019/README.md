@@ -30,3 +30,6 @@ Fichier contenant toutes les fonctions utilisées pour ce projet.
 
 ## [reader.py](reader.py)
 Script python à exécuter.
+
+## DB visualisation statistique
+Sur PHPMyAdmin pour voir les mots qui sont les plus courants, aller dans la vue `plain` et chercher en fonction du theme et regler selon freq decroissante.

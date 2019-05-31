@@ -59,6 +59,47 @@ def remove_determinant(line: list):
             line.remove(x)
     return line
 
+def remove_common(line:list):
+    """Fonction pour enlever les mots les plus communs et ne garder
+    que ceux qui apportent un sens au texte
+    
+    Parameters
+    ----------
+    line : list
+        Ligne de texte a stripper
+    
+    Returns
+    -------
+    list
+        Renvoi la ligne de texte sans les mots inutiles
+    """
+
+    prepositions = [
+        "sours","sur", "entre", "devant", "derrière", "dans", "chez", "avant",
+        "après", "vers", "depuis", "pendant", "pour", "vers", "à", "jusqu'à",
+        "jusqu'au", "de", "par"
+    ]
+
+    propositions = [
+        "je", "tu", "il", "elle", "on", "nous", "vous", "ils", "elles"
+    ]
+
+    coordinations = [
+        "mais", "où", "et", "donc", "or", "ni", "car"
+    ]
+
+    common = [
+         "que", "qui", "pas", "ne", "qu'il", "d'un", "dans", 
+    ]
+
+    print("\033[1;31;40m[-] \033[0m Removing common words")
+
+    for x in line:
+        if x in prepositions or x in coordinations or x in common:
+            line.remove(x)
+    
+    return line
+
 def remove_punctuation(txt: str):
     """Fonction pour enlever la ponctuation d'un texte
     
@@ -100,7 +141,10 @@ def radical(word: str):
 
     # enlever le genre de la fin du mot
     if word[length-1] == 'e' and length != 1:
-        new.remove(word[length-1])
+        # This removes the character from the word
+        # This means all occurences of it ie
+        # exemple ==> xmpl
+        new.remove(word[length-1]) 
         print("\033[1;31;40m[-] \033[0m Removing feminine")
 
     if word[length-1] == 's' and length != 1:
@@ -277,7 +321,7 @@ def get_frequence(db, word:str, theme:str):
     cursor.execute(total_query % (theme))
     total = float(cursor.fetchone()[0])
 
-    db.close()
+    cursor.close()
 
     return freq/total, total
 
@@ -344,7 +388,7 @@ def interval_insert(db, word:str, theme:str):
         cursor.execute(update_query % (bottom, top, word, theme))
         db.commit()
 
-    db.close()
+    cursor.close()
 
 def get_themes():
     """Fonction nous permettant d'obtenir tous les themes enregistres
@@ -360,6 +404,7 @@ def get_themes():
     cursor.execute("SELECT nom from themes")
     themes=cursor.fetchall()
 
+    cursor.close()
     db.close()
 
     return themes
@@ -395,7 +440,12 @@ def get_interval(word:str, theme:str):
     )
 
     cursor.execute(query % (word, theme))
-    return cursor.fetchone()
+    interval = cursor.fetchone()
+
+    cursor.close()
+    db.close()
+
+    return interval
 
 def word_in_theme(word:str, theme:str):
     """Fonction nous permettant de savoir si un mot apparait dans un theme donne

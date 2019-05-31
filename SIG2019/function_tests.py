@@ -3,7 +3,7 @@
 import mysql.connector
 import sys, time
 import configparser
-import fonctions
+import fonctions_reader
 
 def test(theme: str):
 
