@@ -27,13 +27,13 @@ colormap = np.array(['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w'])
 db = fonctions.connectDB()
 cursor = db.cursor()
 
-#cursor.execute("SELECT * FROM frequences WHERE 1")
-cursor.execute("SELECT mot, frequence FROM frequences WHERE 1")
+cursor.execute("SELECT * FROM frequences WHERE 1")             # 3D data
+#cursor.execute("SELECT mot, frequence FROM frequences WHERE 1") # 2D data
 data = cursor.fetchall()
 
 x = pd.DataFrame(data=data)
-#x.columns=['Mot', 'Theme', 'Frequence']
-x.columns=['Mot', 'Frequence']
+x.columns=['Mot', 'Theme', 'Frequence']                        # 3D columns
+#x.columns=['Mot', 'Frequence']                                  # 2D columns
 print(x)
 
 model = KMeans(n_clusters=8)
@@ -41,15 +41,13 @@ model.fit(x)
 
 fig = plt.figure()
 
-plt.scatter(x.Mot, x.Frequence, c=colormap[model.labels_])
+#plt.scatter(x.Mot, x.Frequence, c=colormap[model.labels_], s=2)
 
 
-#ax = fig.add_subplot(111, projection='3d')
-
-#ax.scatter(x.Mot, x.Theme, x.Frequence, c=colormap[model.labels_],)
-
-#ax.set_xlabel('Mot')
-#ax.set_ylabel('Theme')
-#ax.set_zlabel('Frequence')
+ax = fig.add_subplot(111, projection='3d')
+ax.scatter(x.Mot, x.Theme, x.Frequence, c=colormap[model.labels_], s=2)
+ax.set_xlabel('Mot')
+ax.set_ylabel('Theme')
+ax.set_zlabel('Frequence')
 
 plt.show()
