@@ -242,24 +242,24 @@ def insert_db(freq: dict, theme: str):
         
         # check that the word doesn't already have a frequence  associated with it
         elif result2 == None and result3 == None:
+            if len(mot) <= 26:    
+                print("\033[1;32;40m[+] \033[0m Inserting word '%s' into DB" % mot)
+                cursor.execute("INSERT INTO `word` (mot) VALUES ('%s')" % mot)
+                db.commit()
 
-            print("\033[1;32;40m[+] \033[0m Inserting word '%s' into DB" % mot)
-            cursor.execute("INSERT INTO `word` (mot) VALUES ('%s')" % mot)
-            db.commit()
-
-            print("\033[1;32;40m[+] \033[0m Inserting the frequency %d of word '%s' of theme '%s' in DB" % (freq, mot, theme))
-            query = (
-                """
-                INSERT INTO `frequences` (mot, theme, frequence)
-                VALUES (
-                    (SELECT id FROM word WHERE mot='%s'),
-                    (SELECT id FROM themes WHERE nom='%s'),
-                     %d
+                print("\033[1;32;40m[+] \033[0m Inserting the frequency %d of word '%s' of theme '%s' in DB" % (freq, mot, theme))
+                query = (
+                    """
+                    INSERT INTO `frequences` (mot, theme, frequence)
+                    VALUES (
+                        (SELECT id FROM word WHERE mot='%s'),
+                        (SELECT id FROM themes WHERE nom='%s'),
+                        %d
+                    )
+                    """
                 )
-                """
-            )
-            cursor.execute(query % (mot, theme, freq))
-            db.commit()
+                cursor.execute(query % (mot, theme, freq))
+                db.commit()
 
         # If it already has a frequency and already exists only update the frequency within the theme
         else:
