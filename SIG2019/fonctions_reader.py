@@ -277,8 +277,8 @@ def insert_db(freq: dict, theme: str):
         
 
     # Second loop to modify the interval values after all of the words are inserteds
-    for mot, freq in freq2.items():  
-        interval_insert(db, mot, theme)
+    #for mot, freq in freq2.items():  
+    #   interval_insert(db, mot, theme)
 
 
     cursor.close()

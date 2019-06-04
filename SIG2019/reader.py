@@ -10,6 +10,7 @@
 #
 
 from multiprocessing import Pool
+from os.path import isfile, join
 
 import sys, time, os
 import fonctions_reader as fonctions
@@ -64,7 +65,13 @@ def main(argv):
         print("usage reader.py <fileName> <themeName>\n")
         return 0
 
-    read(argv[0], argv[1])
+    if argv[0] == "-a" and argv[1] != None:
+        for x in os.listdir(argv[1]):
+            theme = x.split(".")
+            if isfile(join(argv[1], x)):
+                read(join(argv[1], x), theme[0])    
+    else:
+        read(argv[0], argv[1])
 
 if __name__ == "__main__":
     main(sys.argv[1:])
