@@ -27,10 +27,19 @@ colormap = np.array(['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w'])
 db = fonctions.connectDB()
 cursor = db.cursor()
 
-cursor.execute("SELECT * FROM frequences WHERE 1")             # 3D data
-#cursor.execute("SELECT theme, frequence FROM frequences WHERE 1") # 2D data
-data = cursor.fetchall()
+themes = fonctions.get_themes()
+data = []
 
+""" for theme in themes:
+
+    cursor.execute("SELECT frequences.mot as mot, frequences.theme as theme, frequences.frequence as frequence FROM frequences, variance WHERE theme=(SELECT id FROM themes WHERE nom='%s') AND frequences.mot=variance.Mot AND variance.Variance > 4 ORDER BY frequence DESC"% theme)             # 3D data
+    #cursor.execute("SELECT theme, frequence FROM frequences WHERE 1") # 2D data
+    data = data + cursor.fetchall()
+    print(data) """
+
+cursor.execute("SELECT mot, theme, frequence FROM fittingData")
+data = cursor.fetchall()
+print(data)
 x = pd.DataFrame(data=data)
 x.columns=['Mot', 'Theme', 'Frequence']                        # 3D columns
 #x.columns=['Theme', 'Frequence']                                  # 2D columns
