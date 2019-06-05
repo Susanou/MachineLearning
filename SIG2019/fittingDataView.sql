@@ -8,5 +8,4 @@ CREATE VIEW fittingData AS
         frequences
             INNER JOIN
         variance ON frequences.mot = variance.Mot
-            AND variance.Variance > 4
     ORDER BY frequence DESC

@@ -31,7 +31,7 @@ def writer(path: str, file: str):
             word = 0
             lines = f.readlines()
 
-            while word < 500 and i < 1000:
+            while word < 500 and i < 200:
                 for line in lines:
                     line = line.split(" ")                        
 
@@ -48,7 +48,7 @@ def writer(path: str, file: str):
                             word = 0
                             i += 1
 
-                        if i == 1000: # This is just to prevent too many files from being generated
+                        if i == 200: # This is just to prevent too many files from being generated
                             break
 
                     if word == 500:
@@ -56,7 +56,7 @@ def writer(path: str, file: str):
                         word = 0
                         i += 1
                     
-                    if i == 1000:
+                    if i == 200:
                         break
             
             w.close()
@@ -69,11 +69,11 @@ def writer(path: str, file: str):
 
 def main(argv):
     if argv == None:
-        print("usage reader.py <pathName> <newPathName>\n")
+        print("usage textSplitter.py <pathName> <newPathName>\n")
         return 0
 
     if argv[0] == "-h" or argv[0] == "help":
-        print("usage reader.py <pathName> <newPathame>\n")
+        print("usage textSplitter.py <pathName> <newPathame>\n")
         return 0
 
 

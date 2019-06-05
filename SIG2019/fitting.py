@@ -37,15 +37,15 @@ data = []
     data = data + cursor.fetchall()
     print(data) """
 
-cursor.execute("SELECT mot, theme, frequence FROM fittingData")
+cursor.execute("SELECT theme, mot, variance FROM fittingData ")
 data = cursor.fetchall()
-print(data)
+
 x = pd.DataFrame(data=data)
-x.columns=['Mot', 'Theme', 'Frequence']                        # 3D columns
+x.columns=['Theme', 'Mot', 'Variance']                        # 3D columns
 #x.columns=['Theme', 'Frequence']                                  # 2D columns
 print(x)
 
-model = KMeans(n_clusters=3)
+model = KMeans(n_clusters=6)
 model.fit(x)
 
 fig = plt.figure()
@@ -54,7 +54,7 @@ fig = plt.figure()
 
 
 ax = fig.add_subplot(111, projection='3d')
-ax.scatter(x.Theme, x.Mot, x.Frequence, c=colormap[model.labels_], s=2)
+ax.scatter(x.Theme, x.Mot, x.Variance, c=colormap[model.labels_], s=2)
 ax.set_xlabel('Theme')
 ax.set_ylabel('Mot')
 ax.set_zlabel('Frequence')
