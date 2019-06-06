@@ -33,13 +33,14 @@ def read(file: str, theme: str):
             content = f.readlines()
             # while there is still something to read
             for line in content:
+                
                 line = fonctions.remove_punctuation(line)
 
                 # split the line to obtain single words
                 # and remove the uncesssesary words                
                 line = line.split(" ")      
-                line = fonctions.remove_determinant(line)
-                line = fonctions.remove_common(line)
+                #line = fonctions.remove_determinant(line)
+                #line = fonctions.remove_common(line)
 
                 for word in line:
                     if word != "":
