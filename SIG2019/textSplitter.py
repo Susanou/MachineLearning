@@ -31,19 +31,19 @@ def writer(path: str, file: str):
             word = 0
             lines = f.readlines()
 
-            while word < 500 and i < 200:
+            while word < 1000 and i < 200:
                 for line in lines:
                     line = line.split(" ")                        
 
                     for mot in line:
                         if word == 0:
                             new = file.split(".")
-                            print(path+new[0]+"%d.txt"%i)
-                            w = open(path+new[0]+"%d.txt"%i, 'w')
+                            print(path+new[0]+"-%d.txt"%i)
+                            w = open(path+new[0]+"-%d.txt"%i, 'w')
                         w.write(mot+" ")
                         word+=1
 
-                        if word == 500:
+                        if word == 1000:
                             w.close()
                             word = 0
                             i += 1
@@ -51,7 +51,7 @@ def writer(path: str, file: str):
                         if i == 200: # This is just to prevent too many files from being generated
                             break
 
-                    if word == 500:
+                    if word == 1000:
                         w.close()
                         word = 0
                         i += 1

@@ -32,132 +32,6 @@ def  count_word(word: str, freq: dict):
 
     return freq
 
-def remove_determinant(line: list):
-    """Fonction pour enlever les determinants du texte
-    
-    Parameters
-    ----------
-    line : list
-        Liste de mots d'une ligne du text
-    
-    Returns
-    -------
-    list
-        Renvoi la liste de mots sans les determinants
-    """
-
-    print("\033[1;31;40m[-] \033[0m Removing determinants")
-
-    determinants = [
-        "le", "la", "les", "de", "des", "un", "une",
-        "ce", "cet", "cette", "ces",
-        "mon", "ma", "mes", "ton", "ta", "tes", "son", "sa", "ses",
-        "notre", "votre", "leur", "nos", "vos", "leurs"
-    ]
-    for x in line:
-        if x in determinants:
-            line.remove(x)
-    return line
-
-def remove_common(line:list):
-    """Fonction pour enlever les mots les plus communs et ne garder
-    que ceux qui apportent un sens au texte
-    
-    Parameters
-    ----------
-    line : list
-        Ligne de texte a stripper
-    
-    Returns
-    -------
-    list
-        Renvoi la ligne de texte sans les mots inutiles
-    """
-
-    prepositions = [
-        "sours","sur", "entre", "devant", "derrière", "dans", "chez", "avant",
-        "après", "vers", "depuis", "pendant", "pour", "vers", "à", "jusqu'à",
-        "jusqu'au", "de", "par"
-    ]
-
-    propositions = [
-        "je", "tu", "il", "elle", "on", "nous", "vous", "ils", "elles"
-    ]
-
-    coordinations = [
-        "mais", "où", "et", "donc", "or", "ni", "car"
-    ]
-
-    common = [
-         "que", "qui", "pas", "ne", "qu'il", "d'un", "dans", 
-    ]
-
-    print("\033[1;31;40m[-] \033[0m Removing common words")
-
-    for x in line:
-        if x in prepositions or x in coordinations or x in common:
-            line.remove(x)
-    
-    return line
-
-def remove_punctuation(txt: str):
-    """Fonction pour enlever la ponctuation d'un texte
-    
-    Parameters
-    ----------
-    txt : str
-        texte a modifier
-
-    Returns
-    -------
-    str
-        Renvoi le texte sans ponctuation
-    """
-    print("\033[1;31;40m[-] \033[0m Removing punctuation")
-
-    txt = txt.translate(str.maketrans('', '', punctuation))
-    txt = txt.rstrip()
-
-    return (''.join(e for e in txt if (e.isalnum() or e == ' '))).lower()        
-
-def radical(word: str):
-    """Fonction pour enlever les terminaisons des mots et ne garder que les radicaux
-    
-    Parameters
-    ----------
-    word : str
-        mot a stripper
-    
-    Returns
-    -------
-    str
-        Renvoi le radical du mot
-    """
-
-    print('\033[1;31;40m[-] \033[0m removing radical of \'%s\'' % word)
-
-    length = len(word)
-    new = list(word)
-
-    # enlever le genre de la fin du mot
-    if word[length-1] == 'e' and length != 1:
-        # This removes the character from the word
-        # This means all occurences of it ie
-        # exemple ==> xmpl
-        new.remove(word[length-1]) 
-        print("\033[1;31;40m[-] \033[0m Removing feminine")
-
-    if word[length-1] == 's' and length != 1:
-        new.remove(word[length-1])
-        print("\033[1;31;40m[-] \033[0m Removing plural")
-        if word[length-2] =='e':
-            new.remove(word[length-2])
-            print("\033[1;31;40m[-] \033[0m Removing Feminine")
-            
-    # maybe truncate more than that?
-    
-    return "".join(new)
-
 def connectDB():
     """Fonction utilisee pour se connecter a la base de donnee
     
@@ -181,7 +55,7 @@ def connectDB():
     
     return db
 
-def insert_db(freq: dict, theme: str):
+def insert_db(freq: dict, theme: str, cluster: str):
     """Fonction permettant d'inserer les donnees dans la base de donnees
     
     Parameters
@@ -190,6 +64,8 @@ def insert_db(freq: dict, theme: str):
         Dictionnaire des mots et de leur frequence associee
     theme : str
         Nom du theme associer
+    cluster : str
+        Nom du cluster associer
     """
 
     freq2 = freq # variable needed so that we go over the dict a second time
@@ -198,12 +74,21 @@ def insert_db(freq: dict, theme: str):
     
     cursor = db.cursor()
 
+    cursor.execute("SELECT * FROM cluster where nom='%s'" % cluster)
+    result = cursor.fetchone()
+
+    if result == None:
+        print("\033[1;32;40m[+] \033[0m Inserting cluster '%s' into DB" % cluster)
+        cursor.execute("INSERT INTO `cluster` (nom) VALUES ('%s')" % cluster)
+        db.commit()
+
     cursor.execute("SELECT * FROM themes where nom='%s'" % theme)
     result = cursor.fetchone()
 
     if result == None:
         print("\033[1;32;40m[+] \033[0m Inserting theme '%s' into DB" % theme)
-        cursor.execute("INSERT INTO `themes` (nom) VALUES ('%s')" % theme)
+        cursor.execute("INSERT INTO `themes` (nom, cluster) VALUES ('%s', (SELECT id FROM cluster WHERE nom='%s'))" % (theme, cluster))
+        db.commit()
 
     for mot, freq in freq.items():
 

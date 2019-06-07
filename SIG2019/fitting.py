@@ -37,7 +37,7 @@ data = []
     data = data + cursor.fetchall()
     print(data) """
 
-cursor.execute("SELECT theme, mot, variance FROM fittingData ")
+cursor.execute("SELECT theme, mot, variance FROM fittingData WHERE variance > 20")
 data = cursor.fetchall()
 
 x = pd.DataFrame(data=data)
@@ -57,6 +57,6 @@ ax = fig.add_subplot(111, projection='3d')
 ax.scatter(x.Theme, x.Mot, x.Variance, c=colormap[model.labels_], s=2)
 ax.set_xlabel('Theme')
 ax.set_ylabel('Mot')
-ax.set_zlabel('Frequence')
+ax.set_zlabel('Variance')
 
 plt.show()

@@ -11,11 +11,15 @@
 
 from multiprocessing import Pool
 from os.path import isfile, join
+from nltk.corpus import stopwords
+from nltk.stem import SnowballStemmer
+from nltk.tokenize import word_tokenize
 
+import nltk
 import sys, time, os
 import fonctions_reader as fonctions
 
-def read(file: str, theme: str):
+def read(file: str, theme: str, cluster: str):
     """Fonction pour lire le fichier texte
     
     Parameters
@@ -24,6 +28,8 @@ def read(file: str, theme: str):
         Nom du fichier a lire
     theme : str
         Nom du theme analyse
+    cluster: str
+        Nom du cluster associer
     """
 
     frequences = dict()     # dictionnaire [mots] = frequences
@@ -31,23 +37,17 @@ def read(file: str, theme: str):
         f = open(file, "r")     # open the file in reading mode
         if f.mode == 'r':
             content = f.readlines()
+            french_stemmer = SnowballStemmer('french')
             # while there is still something to read
             for line in content:
-                
-                line = fonctions.remove_punctuation(line)
-
-                # split the line to obtain single words
-                # and remove the uncesssesary words                
-                line = line.split(" ")      
-                #line = fonctions.remove_determinant(line)
-                #line = fonctions.remove_common(line)
-
+                line = word_tokenize(line, 'french')
                 for word in line:
                     if word != "":
-                        word = fonctions.radical(word)
-                        frequences = fonctions.count_word(word, frequences)
+                        if word.isalnum():
+                            if word not in stopwords.words('french'):
+                                frequences = fonctions.count_word(french_stemmer.stem(word), frequences)
                 
-            fonctions.insert_db(frequences, theme)
+            fonctions.insert_db(frequences, theme, cluster)
         
         f.close()
     except IOError:
@@ -69,8 +69,9 @@ def main(argv):
     if argv[0] == "-a" and argv[1] != None:
         for x in os.listdir(argv[1]):
             theme = x.split(".")
+            cluster = theme[0].split("-")
             if isfile(join(argv[1], x)):
-                read(join(argv[1], x), theme[0])    
+                read(join(argv[1], x), theme[0], cluster[0])    
     else:
         read(argv[0], argv[1])
 
