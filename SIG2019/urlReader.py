@@ -19,9 +19,10 @@ from nltk.tokenize import word_tokenize
 
 import nltk
 import sys, time, os
-import MachineLearning.SIG2019.fonctions_reader as fonctions
+import fonctions_reader as fonctions
 import urllib.request
 import nltk
+import argparse
 
 def get_page(url: str):
     """Fonction pour recuperer le texte nettoyer d'une page html
@@ -91,7 +92,7 @@ def get_unprocessed_url():
     db = fonctions.connectDB()
     cursor = db.cursor()
 
-    cursor.execute("SELECT url FROM url WHERE flag=0")
+    cursor.execute("SELECT url, cluster FROM url WHERE flag=0")
     urls = cursor.fetchall()
     
     cursor.close()
@@ -100,7 +101,27 @@ def get_unprocessed_url():
     return urls
 
 def get_all_url():
-    """Fonctions permettant de recuperer toutes les urls
+    """Fonction permettant d'obtenir toutes les URLs sans prendre en compte
+    le flag
+    
+    Returns
+    -------
+    list
+        Renvoi la liste des URLs
+    """
+    db = fonctions.connectDB()
+    cursor = db.cursor()
+
+    cursor.execute("SELECT url, cluster FROM url")
+    urls = cursor.fetchall()
+    
+    cursor.close()
+    db.close()
+
+    return urls
+
+def get_cluster_url(cluster: int):
+    """Fonctions permettant de recuperer toutes les urls d;un cluster donne
     
     Returns
     -------
@@ -110,7 +131,7 @@ def get_all_url():
     db = fonctions.connectDB()
     cursor = db.cursor()
 
-    cursor.execute("SELECT url FROM url WHERE flag")
+    cursor.execute("SELECT url, cluster FROM url WHERE cluster=%d" % cluster)
     urls = cursor.fetchall()
     
     cursor.close()
@@ -118,16 +139,30 @@ def get_all_url():
 
     return urls
 
-def main(argv):
-    if argv == None or argv[0]=="-h" or "help" in argv[0]:
-        print("")
+def unprocessed():
+    urls = get_unprocessed_url()
 
-    if argv[0]=='-u':
-        pass # get the unprocessed urls
-    
-    if argv[0]=='-a' or argv[0]=='--all':
-        pass # get all urls regardless of flag
+def all():
+    urls = get_all_url()
 
+def cluster(c: int):
+    pass
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    parser = argparse.ArgumentParser(description='Programm to create data from url texts')
+    parser.add_argument('-a', '--all', action='store_true', help='Get all urls regardless of flag')
+    parser.add_argument('-u', '--unprocessed', action='store_true', help='Get all unprocessed URLs')
+    parser.add_argument('-c', '--cluster', type=int, default=0, nargs='?', help='Get all the urls related to input cluster')
+
+    args = parser.parse_args()
+
+    if args.all:
+        print("getting all urls")
+        all()
+    elif args.unprocessed:
+        print("getting unprocessed urls")
+        unprocessed()
+    else:
+        print("getting url of cluster %d" % args.cluster)
+        cluster(args.cluster)
+    
