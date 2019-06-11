@@ -3,7 +3,7 @@
 import mysql.connector
 import sys, time
 import configparser
-import fonctions_reader
+import fonctions_reader as fonctions
 
 def test(theme: str):
 
@@ -108,10 +108,27 @@ def query_test(word: str, theme: str):
 
     return freq/total, total
 
+def get_all_url():
+    """Fonction permettant d'obtenir toutes les URLs sans prendre en compte
+    le flag
+    
+    Returns
+    -------
+    list
+        Renvoi la liste des URLs
+    """
+    db = fonctions.connectDB()
+    cursor = db.cursor()
+
+    cursor.execute("SELECT url, cluster FROM url")
+    urls = cursor.fetchall()
+    
+    cursor.close()
+    db.close()
+
+    return urls
+
 if __name__ == "__main__":
-    test = fonctions.get_interval("ceci", "test")
-    bottom = test[0]
-    top = test[1]
+    test = get_all_url()
     print(test)
-    print(bottom)
-    print(top)
+    print(test[0])

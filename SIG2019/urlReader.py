@@ -37,7 +37,7 @@ def get_page(url: str):
     str
         Renvoi le texte de la page sans le code HTML
     """
-    response = urllib.request.urlopen(url)
+    response = urllib.request.urlopen("%s" % url)
     html = response.read()
     soup = BeautifulSoup(html, "html5lib")
     text = soup.get_text(strip=True)
@@ -64,7 +64,7 @@ def read_page(url: str, theme: str, cluster: str):
     text = word_tokenize(text, language='french')
 
     for word in text:
-        if word == "":
+        if word != "":
             if word.isalnum():
                 if word not in stopwords.words('french'):
                     frequences = fonctions.count_word(french_stemmer.stem(word), frequences)
@@ -75,6 +75,7 @@ def read_page(url: str, theme: str, cluster: str):
     cursor = db.cursor()
 
     cursor.execute("UPDATE url SET flag=1 WHERE url='%s'" % url)
+    db.commit()
 
     cursor.close()
     db.close()
@@ -92,7 +93,7 @@ def get_unprocessed_url():
     db = fonctions.connectDB()
     cursor = db.cursor()
 
-    cursor.execute("SELECT url, cluster FROM url WHERE flag=0")
+    cursor.execute("SELECT url, cluster.nom FROM url JOIN cluster ON url.cluster=cluster.id WHERE flag=0")
     urls = cursor.fetchall()
     
     cursor.close()
@@ -112,7 +113,7 @@ def get_all_url():
     db = fonctions.connectDB()
     cursor = db.cursor()
 
-    cursor.execute("SELECT url, cluster FROM url")
+    cursor.execute("SELECT url, cluster.nom FROM url JOIN cluster ON url.cluster=cluster.id")
     urls = cursor.fetchall()
     
     cursor.close()
@@ -131,7 +132,7 @@ def get_cluster_url(cluster: int):
     db = fonctions.connectDB()
     cursor = db.cursor()
 
-    cursor.execute("SELECT url, cluster FROM url WHERE cluster=%d" % cluster)
+    cursor.execute("SELECT url, cluster.nom FROM url, cluster WHERE cluster.id=%d" % cluster)
     urls = cursor.fetchall()
     
     cursor.close()
@@ -142,11 +143,31 @@ def get_cluster_url(cluster: int):
 def unprocessed():
     urls = get_unprocessed_url()
 
+    for content in urls:
+
+        url = content[0].split('/')
+        read_page(content[0], url[-1], content[1])
+
+    return 1
+
 def all():
     urls = get_all_url()
 
+    for content in urls:
+
+        url = content[0].split('/')
+        read_page(content[0], url[-1], content[1])
+
+    return 1
+
 def cluster(c: int):
-    pass
+    urls = get_cluster_url(c)
+
+    for content in urls:
+        url = content[0].split('/')
+        read_page(content[0], url[-1], content[1])
+
+    return 1
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Programm to create data from url texts')
