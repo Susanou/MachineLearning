@@ -286,7 +286,7 @@ def get_themes():
     db = connectDB()
     cursor = db.cursor()
 
-    cursor.execute("SELECT id, cluster from themes")
+    cursor.execute("SELECT id, cluster from themes WHERE cluster<7")
     themes=cursor.fetchall()
 
     cursor.close()
@@ -395,3 +395,4 @@ def is_in_interval(word:str, freq:float):
                 return True # add a way to check the theme for both cases
         
     return False
+

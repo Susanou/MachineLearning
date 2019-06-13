@@ -58,8 +58,8 @@ def read(file: str, theme: str, cluster: str):
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description='Programm to create data from url texts')
-    parser.add_argument('-a', '--all', action='store_true', help='Get all urls regardless of flag')
+    parser = argparse.ArgumentParser(description='Programm to create data from txt files. FOrmat should be "cluster-#.txt"')
+    parser.add_argument('-a', '--all', action='store_true', help='Read all files in a folder and creates theme and cluster according to format')
     parser.add_argument('filename', type=str, help='Name of the file to read')
     parser.add_argument('themename', type=str, nargs='?', help='Name of the theme of the file')
     parser.add_argument('cluster', type=str, nargs='?', help='Name of the cluster of the file')
@@ -71,6 +71,6 @@ if __name__ == "__main__":
             theme = x.split(".")
             cluster = theme[0].split("-")
             if isfile(join(args.filename, x)):
-                read(join(args.filename, x), theme[0], cluster[0])    
+                read(join(args.filename, x), theme[0].lower(), cluster[0].lower())    
     elif args.filename and args.themename:
         read(args.filename, args.themename, args.cluster)

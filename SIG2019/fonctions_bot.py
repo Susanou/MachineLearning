@@ -30,81 +30,6 @@ def  count_word(word: str, freq: dict):
 
     return freq
 
-def remove_determinant(line: list):
-    """Fonction pour enlever les determinants du texte
-    
-    Parameters
-    ----------
-    line : list
-        Liste de mots d'une ligne du text
-    
-    Returns
-    -------
-    list
-        Renvoi la liste de mots sans les determinants
-    """
-
-    determinants = [
-        "le", "la", "les", "de", "des", "un", "une",
-        "ce", "cet", "cette", "ces",
-        "mon", "ma", "mes", "ton", "ta", "tes", "son", "sa", "ses",
-        "notre", "votre", "leur", "nos", "vos", "leurs"
-    ]
-    for x in line:
-        if x in determinants:
-            line.remove(x)
-    return line
-
-def remove_punctuation(txt: str):
-    """Fonction pour enlever la ponctuation d'un texte
-    
-    Parameters
-    ----------
-    txt : str
-        texte a modifier
-
-    Returns
-    -------
-    str
-        Renvoi le texte sans ponctuation
-    """
-
-    txt = txt.translate(str.maketrans('', '', punctuation))
-    txt = txt.rstrip()
-
-    return (''.join(e for e in txt if (e.isalnum() or e == ' '))).lower()        
-
-def radical(word: str):
-    """Fonction pour enlever les terminaisons des mots et ne garder que les radicaux
-    
-    Parameters
-    ----------
-    word : str
-        mot a stripper
-    
-    Returns
-    -------
-    str
-        Renvoi le radical du mot
-    """
-
-    length = len(word)
-    new = list(word)
-
-    # enlever le genre de la fin du mot
-    if word[length-1] == 'e' and length != 1:
-        new.remove(word[length-1])
-
-    if word[length-1] == 's' and length != 1:
-        new.remove(word[length-1])
-
-        if word[length-2] =='e':
-            new.remove(word[length-2])
-            
-    # maybe truncate more than that?
-    
-    return "".join(new)
-
 def connectDB():
     """Fonction utilisee pour se connecter a la base de donnee
     
@@ -126,7 +51,7 @@ def connectDB():
     
     return db
 
-def insert_db(freq: dict, theme: str):
+def insert_db(freq: dict, theme: str, cluster: str):
     """Fonction permettant d'inserer les donnees dans la base de donnees
     
     Parameters
@@ -135,6 +60,8 @@ def insert_db(freq: dict, theme: str):
         Dictionnaire des mots et de leur frequence associee
     theme : str
         Nom du theme associer
+    cluster : str
+        Nom du cluster associer
     """
 
     freq2 = freq # variable needed so that we go over the dict a second time
@@ -143,11 +70,21 @@ def insert_db(freq: dict, theme: str):
     
     cursor = db.cursor()
 
+    cursor.execute("SELECT * FROM cluster where nom='%s'" % cluster)
+    result = cursor.fetchone()
+
+    if result == None:
+        
+        cursor.execute("INSERT INTO `cluster` (nom) VALUES ('%s')" % cluster)
+        db.commit()
+
     cursor.execute("SELECT * FROM themes where nom='%s'" % theme)
     result = cursor.fetchone()
 
     if result == None:
-        cursor.execute("INSERT INTO `themes` (nom) VALUES ('%s')" % theme)
+        
+        cursor.execute("INSERT INTO `themes` (nom, cluster) VALUES ('%s', (SELECT id FROM cluster WHERE nom='%s'))" % (theme, cluster))
+        db.commit()
 
     for mot, freq in freq.items():
 
@@ -169,6 +106,7 @@ def insert_db(freq: dict, theme: str):
 
 
         if result2 != None and result3 == None:
+            
             query = (
                 """
                 INSERT INTO `frequences` (mot, theme, frequence)
@@ -185,22 +123,23 @@ def insert_db(freq: dict, theme: str):
         
         # check that the word doesn't already have a frequence  associated with it
         elif result2 == None and result3 == None:
+            if len(mot) <= 26:    
+                
+                cursor.execute("INSERT INTO `word` (mot) VALUES ('%s')" % mot)
+                db.commit()
 
-            cursor.execute("INSERT INTO `word` (mot) VALUES ('%s')" % mot)
-            db.commit()
-
-            query = (
-                """
-                INSERT INTO `frequences` (mot, theme, frequence)
-                VALUES (
-                    (SELECT id FROM word WHERE mot='%s'),
-                    (SELECT id FROM themes WHERE nom='%s'),
-                     %d
+                query = (
+                    """
+                    INSERT INTO `frequences` (mot, theme, frequence)
+                    VALUES (
+                        (SELECT id FROM word WHERE mot='%s'),
+                        (SELECT id FROM themes WHERE nom='%s'),
+                        %d
+                    )
+                    """
                 )
-                """
-            )
-            cursor.execute(query % (mot, theme, freq))
-            db.commit()
+                cursor.execute(query % (mot, theme, freq))
+                db.commit()
 
         # If it already has a frequency and already exists only update the frequency within the theme
         else:
@@ -217,8 +156,8 @@ def insert_db(freq: dict, theme: str):
         
 
     # Second loop to modify the interval values after all of the words are inserteds
-    for mot, freq in freq2.items():  
-        interval_insert(db, mot, theme)
+    #for mot, freq in freq2.items():  
+    #   interval_insert(db, mot, theme)
 
 
     cursor.close()
@@ -261,7 +200,7 @@ def get_frequence(db, word:str, theme:str):
     cursor.execute(total_query % (theme))
     total = float(cursor.fetchone()[0])
 
-    db.close()
+    cursor.close()
 
     return freq/total, total
 
@@ -301,6 +240,7 @@ def interval_insert(db, word:str, theme:str):
     result = cursor.fetchone()
 
     if result == None:
+
         insert_query =(
         """
             INSERT INTO `intervals` (bottom, top, mot, theme) VALUES
@@ -315,6 +255,7 @@ def interval_insert(db, word:str, theme:str):
         cursor.execute(insert_query % (bottom, top, word, theme))
         db.commit()
     else:
+
         update_query=(
             """
             UPDATE intervals SET bottom = %f, top = %f
@@ -326,7 +267,7 @@ def interval_insert(db, word:str, theme:str):
         cursor.execute(update_query % (bottom, top, word, theme))
         db.commit()
 
-    db.close()
+    cursor.close()
 
 def get_themes():
     """Fonction nous permettant d'obtenir tous les themes enregistres
@@ -339,9 +280,10 @@ def get_themes():
     db = connectDB()
     cursor = db.cursor()
 
-    cursor.execute("SELECT nom from themes")
+    cursor.execute("SELECT id, cluster from themes WHERE cluster<7")
     themes=cursor.fetchall()
 
+    cursor.close()
     db.close()
 
     return themes
@@ -377,7 +319,12 @@ def get_interval(word:str, theme:str):
     )
 
     cursor.execute(query % (word, theme))
-    return cursor.fetchone()
+    interval = cursor.fetchone()
+
+    cursor.close()
+    db.close()
+
+    return interval
 
 def word_in_theme(word:str, theme:str):
     """Fonction nous permettant de savoir si un mot apparait dans un theme donne
@@ -442,3 +389,15 @@ def is_in_interval(word:str, freq:float):
                 return True # add a way to check the theme for both cases
         
     return False
+
+def loading_animation(n):
+    """Function to animate de waiting time
+    """
+    animation = "|/-\\"
+
+
+    sys.stdout.write("\r Loading " + animation[n % len(animation)])
+    sys.stdout.flush()
+    time.sleep(0.5)
+
+    return n%len(animation)+1

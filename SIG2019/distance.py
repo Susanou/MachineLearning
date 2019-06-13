@@ -9,7 +9,7 @@
 # Email: cam.hochberg@gmail.com
 #
 
-import fonctions_reader as fonctions
+import fonctions_bot as fonctions
 
 def distance1(theme: str, cluster: str, n: int):
     """Fonction pour notre premier algorithme de distance 
