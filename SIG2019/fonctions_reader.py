@@ -294,6 +294,25 @@ def get_themes():
 
     return themes
 
+def get_clusters():
+    """Fonction nous permettant d'obtenir tous les clusters enregistres
+    
+    Returns
+    -------
+    list    
+        Renvoi une liste de tous les clusters enregistres
+    """
+    db = connectDB()
+    cursor = db.cursor()
+
+    cursor.execute("SELECT id from cluster WHERE id < 7")
+    cluster=cursor.fetchall()
+
+    cursor.close()
+    db.close()
+
+    return cluster
+
 def get_interval(word:str, theme:str):
     """Fonction permettant d'obtenir l'interval de confiance 
         d'un mot en fonction du theme
