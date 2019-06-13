@@ -286,7 +286,7 @@ def get_themes():
     db = connectDB()
     cursor = db.cursor()
 
-    cursor.execute("SELECT nom from themes")
+    cursor.execute("SELECT id, cluster from themes")
     themes=cursor.fetchall()
 
     cursor.close()

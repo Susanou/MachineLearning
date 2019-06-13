@@ -141,6 +141,8 @@ def get_cluster_url(cluster: int):
     return urls
 
 def unprocessed():
+    """Fonction pour proceder a l'analyse des urls pas encore utilisees
+    """
     urls = get_unprocessed_url()
 
     for content in urls:
@@ -151,6 +153,8 @@ def unprocessed():
     return 1
 
 def all():
+    """Fonction pour proceder a l'analyse de toutes les urls
+    """
     urls = get_all_url()
 
     for content in urls:
@@ -158,16 +162,19 @@ def all():
         url = content[0].split('/')
         read_page(content[0], url[-1], content[1])
 
-    return 1
-
 def cluster(c: int):
+    """Fonction pour proceder a l'analyse des urls d'un seul cluster
+    
+    Parameters
+    ----------
+    c : int
+        numero de l'id du cluster correspondant
+    """
     urls = get_cluster_url(c)
 
     for content in urls:
         url = content[0].split('/')
         read_page(content[0], url[-1], content[1])
-
-    return 1
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Programm to create data from url texts')

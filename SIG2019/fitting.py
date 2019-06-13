@@ -16,10 +16,11 @@ import configparser
 import math, os, sys, time
 import itertools
 import mysql.connector
-import fonctions_bot as fonctions
+import fonctions_reader as fonctions
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
+from mpl_toolkits.mplot3d import Axes3D
+from distance import distance1
 from sklearn.cluster import KMeans
 
 colormap = np.array(['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w'])
@@ -30,18 +31,11 @@ cursor = db.cursor()
 themes = fonctions.get_themes()
 data = []
 
-""" for theme in themes:
-
-    cursor.execute("SELECT frequences.mot as mot, frequences.theme as theme, frequences.frequence as frequence FROM frequences, variance WHERE theme=(SELECT id FROM themes WHERE nom='%s') AND frequences.mot=variance.Mot AND variance.Variance > 4 ORDER BY frequence DESC"% theme)             # 3D data
-    #cursor.execute("SELECT theme, frequence FROM frequences WHERE 1") # 2D data
-    data = data + cursor.fetchall()
-    print(data) """
-
-cursor.execute("SELECT theme, mot, variance FROM fittingData WHERE variance > 20")
-data = cursor.fetchall()
+for theme, cluster in themes:
+    data.append((theme, cluster, distance1(theme, cluster, 10)))
 
 x = pd.DataFrame(data=data)
-x.columns=['Theme', 'Mot', 'Variance']                        # 3D columns
+x.columns=['Theme', 'Cluster', 'Distance']                        # 3D columns
 #x.columns=['Theme', 'Frequence']                                  # 2D columns
 print(x)
 
@@ -54,9 +48,9 @@ fig = plt.figure()
 
 
 ax = fig.add_subplot(111, projection='3d')
-ax.scatter(x.Theme, x.Mot, x.Variance, c=colormap[model.labels_], s=2)
+ax.scatter(x.Theme, x.Cluster, x.Distance, c=colormap[model.labels_], s=2)
 ax.set_xlabel('Theme')
-ax.set_ylabel('Mot')
-ax.set_zlabel('Variance')
+ax.set_ylabel('Cluster')
+ax.set_zlabel('Distance')
 
 plt.show()
