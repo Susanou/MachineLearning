@@ -30,13 +30,20 @@ docs_train, docs_test, y_train, y_test = train_test_split(
 
 # TASK: Build a vectorizer that splits strings into sequence of 1 to 3
 # characters instead of word tokens
+vectorizer = TfidfVectorizer(ngram_range=(1, 3), analyzer='char', use_idf=False)
 
 # TASK: Build a vectorizer / classifier pipeline using the previous analyzer
 # the pipeline instance should stored in a variable named clf
+clf = Pipeline([
+    ('vect', vectorizer),
+    ('clf', Perceptron(tol=1e-3)),
+])
 
 # TASK: Fit the pipeline on the training set
+clf.fit(docs_train, y_train)
 
 # TASK: Predict the outcome on the testing set in a variable named y_predicted
+y_predicted = clf.predict(docs_test)
 
 # Print the classification report
 print(metrics.classification_report(y_test, y_predicted,
@@ -46,9 +53,9 @@ print(metrics.classification_report(y_test, y_predicted,
 cm = metrics.confusion_matrix(y_test, y_predicted)
 print(cm)
 
-#import matplotlib.pyplot as plt
-#plt.matshow(cm, cmap=plt.cm.jet)
-#plt.show()
+import matplotlib.pyplot as plt
+plt.matshow(cm, cmap=plt.cm.jet)
+plt.show()
 
 # Predict the result on some short new sentences:
 sentences = [

@@ -40,15 +40,36 @@ if __name__ == "__main__":
     # TASK: Build a vectorizer / classifier pipeline that filters out tokens
     # that are too rare or too frequent
 
+    clf = Pipeline([
+        ('vect', TfidfVectorizer()),
+        ('clf', LinearSVC(C=1000, tol=1e-3, penalty='l2')),
+    ])
+
     # TASK: Build a grid search to find out whether unigrams or bigrams are
     # more useful.
     # Fit the pipeline on the training set using grid search for the parameters
 
+    parameters = {
+        'vect__ngram_range': [(1,1), (1,2)],
+    }
+
+    grid_search = GridSearchCV(clf, parameters, cv=5, iid=False, n_jobs=-1)
+    grid_search = grid_search.fit(docs_train, y_train)
+
     # TASK: print the cross-validated scores for the each parameters set
     # explored by the grid search
 
+    n_candidates = len(grid_search.cv_results_['params'])
+    for i in range(n_candidates):
+        print(i, 'params - %s; mean - %0.2f; std - %0.2f'
+                 % (grid_search.cv_results_['params'][i],
+                    grid_search.cv_results_['mean_test_score'][i],
+                    grid_search.cv_results_['std_test_score'][i]))
+
     # TASK: Predict the outcome on the testing set and store it in a variable
     # named y_predicted
+
+    y_predicted = grid_search.predict(docs_test)
 
     # Print the classification report
     print(metrics.classification_report(y_test, y_predicted,
@@ -58,6 +79,6 @@ if __name__ == "__main__":
     cm = metrics.confusion_matrix(y_test, y_predicted)
     print(cm)
 
-    # import matplotlib.pyplot as plt
-    # plt.matshow(cm)
-    # plt.show()
+    import matplotlib.pyplot as plt
+    plt.matshow(cm)
+    plt.show()
