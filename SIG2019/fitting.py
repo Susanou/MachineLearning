@@ -36,18 +36,23 @@ def main():
     clusters = fonctions.get_clusters()
     data = []
 
-    
+    """
     for theme, cluster in themes:
         #data.append((theme, cluster, distance1(theme[0], cluster, 10)))
         #data.append((theme, cluster, distance2(theme, cluster, 10)))
         data.append((theme, cluster, distance3(theme, cluster, 10)))
+   
     """
     
     for cluster in clusters:
         for theme in themes:
             data.append((theme, cluster, distance1(theme[0], cluster, 10)))
             #data.append((theme, cluster, distance2(theme, cluster, 10)))
-    """
+            #data.append((theme, cluster, distance3(theme, cluster, 10)))
+
+    w = open('data/distance1.txt', 'w')
+    w.write(data)
+    
 
     x = pd.DataFrame(data=data)
     x.columns=['Theme', 'Cluster', 'Distance']                        # 3D columns
