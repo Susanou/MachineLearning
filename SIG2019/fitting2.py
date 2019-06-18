@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """Build a language detector model
 
 The goal of this exercise is to train a linear classifier on text features
@@ -25,12 +27,12 @@ dataset = load_files(languages_data_folder)
 
 # Split the dataset in training and test set:
 docs_train, docs_test, y_train, y_test = train_test_split(
-    dataset.data, dataset.target, test_size=0.5)
+    dataset.data, dataset.target, test_size=0.9)
 
 
 # TASK: Build a vectorizer that splits strings into sequence of 1 to 3
 # characters instead of word tokens
-vectorizer = TfidfVectorizer(ngram_range=(1, 3), analyzer='word', use_idf=False)
+vectorizer = TfidfVectorizer(ngram_range=(1,3), analyzer='word', use_idf=True)
 
 # TASK: Build a vectorizer / classifier pipeline using the previous analyzer
 # the pipeline instance should stored in a variable named clf

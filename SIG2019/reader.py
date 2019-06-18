@@ -72,5 +72,7 @@ if __name__ == "__main__":
             cluster = theme[0].split("-")
             if isfile(join(args.filename, x)):
                 read(join(args.filename, x), theme[0].lower(), cluster[0].lower())    
-    elif args.filename and args.themename:
+    elif args.filename and args.themename and args.cluster:
         read(args.filename, args.themename, args.cluster)
+    else:
+        print("usage: reader.py [-h] [-a] filename [themename] [cluster]")
