@@ -14,6 +14,8 @@ import string
 import re
 import fonctions_bot as fonctions
 
+from elizaFitting import fitting
+
 class Eliza:
     """Class contenant les differentes fonctions du chatbot
     """
@@ -21,6 +23,8 @@ class Eliza:
         self.keys = list(map(lambda x:re.compile(x[0], re.IGNORECASE),gPats))
         self.values = list(map(lambda x:x[1],gPats))
         self.freq = dict()
+        self.clf, self.names = fitting()
+        self.talk = list()
 
     def traduire(self, str:str, dict:dict):
         """Fonction permettant de 'traduire' certains mots
@@ -87,24 +91,27 @@ class Eliza:
         str : str
             phrase de l'utilisateur
         """
-        line = fonctions.remove_punctuation(s)
+        if len(self.talk) > 0:
+            self.talk[0] += " " + s
+        else:
+            self.talk.append(s)
 
-        # split the line to obtain single words
-        # and remove the uncesssesary words                
-        line = line.split(" ")      
-        line = fonctions.remove_determinant(line)
-
-        for word in line:
-            self.freq = fonctions.count_word(word, self.freq)
-
-        for word, freq in self.freq.items():
-            if fonctions.is_in_interval(word, freq):
-                print("is in interval")
-                return 1
-            else:
-                print("is not in interval")
         
-        self.reponse(s)
+        max = 0
+        imax = 0
+        predicted = self.clf.predict_proba(self.talk)
+
+        for i, prob in enumerate(predicted[0]):
+            if prob > max:
+                max = prob
+                imax = i
+
+        print(max, " ", self.names[imax])
+
+        if max > 60:
+            return "The theme is %s with a probability of %.2f" % (self.names[imax], max*100)
+        else:
+            return self.reponse(s)
 
         
 

@@ -13,8 +13,9 @@ from multiprocessing import Pool
 from os.path import isfile, join
 
 import sys, time, os
+import argparse
 
-def writer(path: str, file: str):
+def writer(path: str, file: str, words: int, files: int):
     """Fonction pour couper les fichiers textes en fichiers de 500 mots chacun
     
     Parameters
@@ -31,7 +32,7 @@ def writer(path: str, file: str):
             word = 0
             lines = f.readlines()
 
-            while word < 1000 and i < 500:
+            while word < words and i < files:
                 for line in lines:
                     line = line.split(" ")                        
 
@@ -43,20 +44,20 @@ def writer(path: str, file: str):
                         w.write(mot+" ")
                         word+=1
 
-                        if word == 1000:
+                        if word == words:
                             w.close()
                             word = 0
                             i += 1
 
-                        if i == 500: # This is just to prevent too many files from being generated
+                        if i == files: # This is just to prevent too many files from being generated
                             break
 
-                    if word == 1000:
+                    if word == words:
                         w.close()
                         word = 0
                         i += 1
                     
-                    if i == 500:
+                    if i == files:
                         break
             
             w.close()
@@ -67,19 +68,17 @@ def writer(path: str, file: str):
     finally:
         return 1
 
-def main(argv):
-    if argv == None:
-        print("usage textSplitter.py <pathName> <newPathName>\n")
-        return 0
-
-    if argv[0] == "-h" or argv[0] == "help":
-        print("usage textSplitter.py <pathName> <newPathame>\n")
-        return 0
-
-
-    for x in os.listdir(argv[0]):
-            if isfile(join(argv[0], x)):
-                writer(argv[1], join(argv[0], x))  
-
 if __name__ == "__main__":
-    main(sys.argv[1:])
+
+    parser = argparse.ArgumentParser(description='Programm to split all large texts in a folder into smaller paragraphs of fixed length')
+
+    parser.add_argument("pathName", type=str, help="path of the folder with the original files")
+    parser.add_argument("newPath", type=str, help="path to the folder where you store the files")
+    parser.add_argument("words", type=int, default=500, nargs='?', help="number of words per files")
+    parser.add_argument("files", type=int, default=1000, nargs='?', help="number of files to create")
+
+    args = parser.parse_args()
+
+    for x in os.listdir(args.pathName):
+            if isfile(join(args.pathName, x)):
+                writer(args.newPath, join(args.pathName, x), args.words, args.files)  
