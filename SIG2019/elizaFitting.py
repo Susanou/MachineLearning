@@ -26,7 +26,7 @@ def fitting():
     dataset = load_files('dataFitting')
 
     docs_train, docs_test, y_train, y_test = train_test_split(
-        dataset.data, dataset.target, test_size=0.5, random_state=42, shuffle=True)
+        dataset.data, dataset.target, test_size=0.25, random_state=42, shuffle=True)
 
     vectorizer = TfidfVectorizer(ngram_range=(1,3), analyzer='word', use_idf=True)
 

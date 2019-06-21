@@ -228,7 +228,7 @@ def interface():
     therapist = Eliza()
     while s != 'quit':
         try:
-            s = input('> ')
+            s = input('> ') + " "
         except EOFError:
             s = 'quit'
             print(s)
