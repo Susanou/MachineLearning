@@ -40,7 +40,7 @@ def fitting():
     parameters = {
     'vect__ngram_range': [(1, 1), (1, 2)],
     'clf__alpha': (1e-2, 1e-3),
-}
+    }
 
     gs_clf = GridSearchCV(clf, parameters, cv=5, iid=False, n_jobs=-1)
 
