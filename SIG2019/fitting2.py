@@ -134,7 +134,7 @@ def predictNaiveBayes():
     parameters={
         'vect__ngram_range': [(1, 1), (1, 2), (1,3), (1,4), (1,5)],
         'clf__fit_prior': (True, False),
-        'clf__alpha': (1.0, 0.1, 0.5, 2.0, .25, 0.75),
+        'clf__alpha': (1.0, 0.1, 0.5, 2.0, .25, 0.75, 0),
     }
 
     gs_clf = GridSearchCV(clf, parameters, cv=5, iid=False, n_jobs=-1)
@@ -212,6 +212,6 @@ if __name__ == "__main__":
         print("Using SVC to fit")
         predictedSVC()
     else:
-        parser.print_usage()
+        parser.print_help()
 
     

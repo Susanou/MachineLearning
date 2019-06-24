@@ -108,7 +108,7 @@ class Eliza:
 
         print(max, " ", self.names[imax])
 
-        if max > 60:
+        if max*100 > 25:
             return "The theme is %s with a probability of %.2f" % (self.names[imax], max*100)
         else:
             return self.reponse(s)

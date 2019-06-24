@@ -31,7 +31,7 @@ def fitting():
     vectorizer = TfidfVectorizer(ngram_range=(1,3), analyzer='word', use_idf=True)
 
     clf = Pipeline([
-        ('vect', vectorizer),
+        ('vect', vectozrizer),
         ('clf', SGDClassifier(loss='log', penalty='l2',
                           alpha=1e-3, random_state=42,
                           max_iter=5, tol=None))
