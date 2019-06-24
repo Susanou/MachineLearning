@@ -29,8 +29,6 @@ from sklearn.model_selection import train_test_split
 from sklearn import metrics
 from urlReader import get_page
 
-vectorizer = TfidfVectorizer(ngram_range=(1,3), analyzer='word', use_idf=True)
-
 def predictSGD(): 
 
     start = time.time()
@@ -40,16 +38,18 @@ def predictSGD():
         ('clf', SGDClassifier(loss='log', penalty='l2',
                         alpha=1e-3, random_state=42,
                         max_iter=5, tol=None))
-    ])
+    ], verbose=True)
 
     parameters = {
         'vect__ngram_range': [(1, 1), (1, 2), (1,3), (1,4), (1,5)],
         
-        'clf__alpha': (1e-2, 1e-3),
+        'clf__alpha': (1e-2, 1e-3, 5e-3, 7e-3, 4e-3, 3e-3, 2e-3, 8e-3, 9e-3),
     }
 
     gs_clf = GridSearchCV(clf, parameters, cv=5, iid=False, n_jobs=-1)
     gs_clf.fit(docs_train, y_train)
+
+    print(gs_clf.best_params_)
 
     y_predicted = gs_clf.predict(docs_test)
 
@@ -68,13 +68,6 @@ def predictSGD():
 
     # Predict the result on some wikipedia article:
 
-    articles = [
-        get_page('https://fr.wikipedia.org/wiki/Fr%C3%A9d%C3%A9ric_Chopin'),
-        get_page('https://fr.wikipedia.org/wiki/Victor_Hugo'),
-        get_page('http://www.victor-hugo.info/'),
-        get_page('https://www.babelio.com/auteur/mile-Zola/2168')
-    ]
-
     predicted = gs_clf.predict(articles)
     probs = gs_clf.predict_proba(articles)
 
@@ -92,18 +85,22 @@ def predictedSVC():
     clf = Pipeline([
         ('vect', vectorizer),
         ('clf', svc(tol=1e-3, verbose=0, random_state=42,
-            C=1.0, max_iter=-1))
-    ])
+            C=1.0, max_iter=-1, gamma='scale'))
+    ], verbose = True)
 
     parameters={
         'vect__ngram_range': [(1, 1), (1, 2), (1,3), (1,4), (1,5)],
-        'clf__tol':(1e-3, 1e-2, 5e-3, 2e-3, 3e-3,4e-3)
+        'clf__tol':(1e-3, 1e-2, 5e-3, 2e-3, 3e-3,4e-3),
+        'clf__gamma':('auto', 'scale'),
+        'clf__C':(1.0,.1,.2,.3,.4, 0.5, 0.6, 0.7, 0.8, 0.9)
     }
 
     gs_clf = GridSearchCV(clf, parameters, cv=5, iid=False, n_jobs=-1)
     gs_clf.fit(docs_train, y_train)
 
     y_predicted = gs_clf.predict(docs_test)
+
+    print(gs_clf.best_params_)
 
     print("End.......... total=%.2f s" % (start - time.time()))
 
@@ -119,13 +116,6 @@ def predictedSVC():
     plt.show()
 
     # Predict the result on some wikipedia article:
-
-    articles = [
-        get_page('https://fr.wikipedia.org/wiki/Fr%C3%A9d%C3%A9ric_Chopin'),
-        get_page('https://fr.wikipedia.org/wiki/Victor_Hugo'),
-        get_page('http://www.victor-hugo.info/'),
-        get_page('https://www.babelio.com/auteur/mile-Zola/2168')
-    ]
 
     predicted = gs_clf.predict(articles)
 
@@ -150,6 +140,8 @@ def predictNaiveBayes():
     gs_clf = GridSearchCV(clf, parameters, cv=5, iid=False, n_jobs=-1)
     gs_clf.fit(docs_train, y_train)
 
+    print(gs_clf.best_params_)
+
     y_predicted = gs_clf.predict(docs_test)
 
     print("End.......... total=%.2f s" % (start - time.time()))
@@ -167,13 +159,6 @@ def predictNaiveBayes():
 
     # Predict the result on some wikipedia article:
 
-    articles = [
-        get_page('https://fr.wikipedia.org/wiki/Fr%C3%A9d%C3%A9ric_Chopin'),
-        get_page('https://fr.wikipedia.org/wiki/Victor_Hugo'),
-        get_page('http://www.victor-hugo.info/'),
-        get_page('https://www.babelio.com/auteur/mile-Zola/2168')
-    ]
-
     predicted = gs_clf.predict(articles)
     probs = gs_clf.predict_proba(articles)
 
@@ -188,6 +173,8 @@ if __name__ == "__main__":
     global languages_data_folder
     global dataset
     global docs_train, docs_test, y_train, y_test
+    global vectorizer
+    global articles
 
     parser = argparse.ArgumentParser(description="Script for fitting according to 3 different algorithms:\n SVC, Naive Bayes OR SGD")
 
@@ -203,7 +190,17 @@ if __name__ == "__main__":
     languages_data_folder = args.dataPath
     dataset = load_files(languages_data_folder)
     docs_train, docs_test, y_train, y_test = train_test_split(
-        dataset.data, dataset.target, test_size=0.99, random_state=42, shuffle=True)
+        dataset.data, dataset.target, test_size=0.75, random_state=42, shuffle=True)
+    vectorizer = TfidfVectorizer(ngram_range=(1,3), analyzer='word', use_idf=True)
+
+    articles = [
+        get_page('https://fr.wikipedia.org/wiki/Fr%C3%A9d%C3%A9ric_Chopin'),
+        get_page('https://fr.wikipedia.org/wiki/Victor_Hugo'),
+        get_page('http://www.victor-hugo.info/'),
+        get_page('https://www.babelio.com/auteur/mile-Zola/2168'),
+        get_page('https://fr.wikipedia.org/wiki/Arthur_Rimbaud'),
+        get_page('https://fr.wikipedia.org/wiki/Charles_Baudelaire')
+    ]
 
     if args.naive:
         print("Using naive bayes to fit")
