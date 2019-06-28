@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import SGDClassifier
+from sklearn.naive_bayes import MultinomialNB as naive
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.datasets import load_files
@@ -21,7 +22,7 @@ from sklearn.model_selection import train_test_split
 from sklearn import metrics
 from urlReader import get_page
 
-def fitting():
+def fitting1():
     
     dataset = load_files('dataFitting')
 
@@ -38,12 +39,25 @@ def fitting():
     ])
 
     parameters = {
-    'vect__ngram_range': [(1, 1), (1, 2)],
-    'clf__alpha': (1e-2, 1e-3),
+        'vect__ngram_range': [(1, 1), (1, 2), (1,3), (1,4), (1,5)],
+        
+        'clf__alpha': (1e-2, 1e-3, 5e-3, 7e-3, 4e-3, 3e-3, 2e-3, 8e-3, 9e-3),
     }
-
     gs_clf = GridSearchCV(clf, parameters, cv=5, iid=False, n_jobs=-1)
 
     gs_clf.fit(docs_train, y_train)
 
     return gs_clf, dataset.target_names
+
+def fitting2():
+
+    dataset = load_files('dataFitting')
+
+    docs_train, docs_test, y_train, y_test = train_test_split(
+        dataset.data, dataset.target, test_size=0.25, random_state=42, shuffle=True)
+
+def vote():
+    """Fonciton qui permet de déterminer le résultat de l'analyse.
+    On fait voter trois algorithme et on en retire leur analyse.
+    """
+    pass

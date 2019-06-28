@@ -14,7 +14,7 @@ import string
 import re
 import fonctions_bot as fonctions
 
-from elizaFitting import fitting
+from elizaFitting import fitting1
 
 class Eliza:
     """Class contenant les differentes fonctions du chatbot
@@ -23,7 +23,7 @@ class Eliza:
         self.keys = list(map(lambda x:re.compile(x[0], re.IGNORECASE),gPats))
         self.values = list(map(lambda x:x[1],gPats))
         self.freq = dict()
-        self.clf, self.names = fitting()
+        self.clf, self.names = fitting1()
         self.talk = list()
 
     def traduire(self, str:str, dict:dict):

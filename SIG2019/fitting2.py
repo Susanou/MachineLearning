@@ -15,11 +15,14 @@ import sys
 import matplotlib.pyplot as plt
 import argparse
 import time
+import pandas as pd
 
+from mpl_toolkits.mplot3d import Axes3D
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import SGDClassifier
 from sklearn.naive_bayes import MultinomialNB as naive
-from sklearn.naive_bayes import GaussianNB
+from sklearn.naive_bayes import BernoulliNB
+from sklearn.naive_bayes import ComplementNB # as naive
 from sklearn.svm import SVC as svc
 from sklearn.model_selection import GridSearchCV
 from sklearn.linear_model import Perceptron
@@ -74,9 +77,9 @@ def predictSGD():
     for pred in predicted:
         print("%s is the type of the text" % dataset.target_names[pred])
 
-    for i, x in enumerate(probs):
-        for j, prob in enumerate(x):
-            print("these are the probablities in %d for %s: %.2f"% (i, dataset.target_names[j], prob*100))
+    frame = pd.DataFrame(probs, columns=dataset.target_names)
+    print(frame)
+
 
 #If using SVC, not able to get the the different proba of each case
 def predictedSVC():
@@ -85,7 +88,7 @@ def predictedSVC():
     clf = Pipeline([
         ('vect', vectorizer),
         ('clf', svc(tol=1e-3, verbose=0, random_state=42,
-            C=1.0, max_iter=-1, gamma='scale'))
+            C=1.0, max_iter=-1, gamma='scale', probability=True))
     ], verbose = True)
 
     parameters={
@@ -118,14 +121,19 @@ def predictedSVC():
     # Predict the result on some wikipedia article:
 
     predicted = gs_clf.predict(articles)
+    probs = gs_clf.predict_proba(articles)
 
     for pred in predicted:
         print("%s is the type of the text" % dataset.target_names[pred])
+
+    frame = pd.DataFrame(probs, columns=dataset.target_names)
+    print(frame)
 
 def predictNaiveBayes():
 
     start = time.time()
 
+    #MultinomialNB Pipeline
     clf = Pipeline([
         ('vect', vectorizer),
         ('clf', naive(alpha=1.0, fit_prior=True))
@@ -134,7 +142,7 @@ def predictNaiveBayes():
     parameters={
         'vect__ngram_range': [(1, 1), (1, 2), (1,3), (1,4), (1,5)],
         'clf__fit_prior': (True, False),
-        'clf__alpha': (1.0, 0.1, 0.5, 2.0, .25, 0.75, 0),
+        'clf__alpha': (1.0, 0.1, 0.5, 2.0, .25, 0.75, 0.002),
     }
 
     gs_clf = GridSearchCV(clf, parameters, cv=5, iid=False, n_jobs=-1)
@@ -165,9 +173,8 @@ def predictNaiveBayes():
     for pred in predicted:
         print("%s is the type of the text" % dataset.target_names[pred])
 
-    for i, x in enumerate(probs):
-        for j, prob in enumerate(x):
-            print("these are the probablities in %d for %s: %.2f"% (i, dataset.target_names[j], prob*100))
+    frame = pd.DataFrame(probs, columns=dataset.target_names)
+    print(frame)
 
 if __name__ == "__main__":
     global languages_data_folder
@@ -190,7 +197,7 @@ if __name__ == "__main__":
     languages_data_folder = args.dataPath
     dataset = load_files(languages_data_folder)
     docs_train, docs_test, y_train, y_test = train_test_split(
-        dataset.data, dataset.target, test_size=0.75, random_state=42, shuffle=True)
+        dataset.data, dataset.target, test_size=0.9, random_state=42, shuffle=True)
     vectorizer = TfidfVectorizer(ngram_range=(1,3), analyzer='word', use_idf=True)
 
     articles = [
@@ -199,7 +206,8 @@ if __name__ == "__main__":
         get_page('http://www.victor-hugo.info/'),
         get_page('https://www.babelio.com/auteur/mile-Zola/2168'),
         get_page('https://fr.wikipedia.org/wiki/Arthur_Rimbaud'),
-        get_page('https://fr.wikipedia.org/wiki/Charles_Baudelaire')
+        get_page('https://fr.wikipedia.org/wiki/Charles_Baudelaire'),
+        get_page('https://fr.wikipedia.org/wiki/%C3%89mile_Zola')
     ]
 
     if args.naive:
