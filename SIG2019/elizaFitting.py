@@ -11,6 +11,7 @@
 
 import sys
 import matplotlib.pyplot as plt
+import numpy as np
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import SGDClassifier
@@ -22,17 +23,17 @@ from sklearn.model_selection import train_test_split
 from sklearn import metrics
 from urlReader import get_page
 
-def fitting1():
-    
-    dataset = load_files('dataFitting')
+dataset = load_files('dataFitting')
 
-    docs_train, docs_test, y_train, y_test = train_test_split(
+docs_train, docs_test, y_train, y_test = train_test_split(
         dataset.data, dataset.target, test_size=0.25, random_state=42, shuffle=True)
+
+def fitting1():
 
     vectorizer = TfidfVectorizer(ngram_range=(1,3), analyzer='word', use_idf=True)
 
     clf = Pipeline([
-        ('vect', vectozrizer),
+        ('vect', vectorizer),
         ('clf', SGDClassifier(loss='log', penalty='l2',
                           alpha=1e-3, random_state=42,
                           max_iter=5, tol=None))
@@ -56,8 +57,56 @@ def fitting2():
     docs_train, docs_test, y_train, y_test = train_test_split(
         dataset.data, dataset.target, test_size=0.25, random_state=42, shuffle=True)
 
-def vote():
-    """Fonciton qui permet de déterminer le résultat de l'analyse.
-    On fait voter trois algorithme et on en retire leur analyse.
+def max(prob):
+    max=prob[0]
+    maxi=0
+    for i, p in enumerate(prob):
+        if max < p:
+            max = p
+            maxi = i
+
+    return maxi
+
+def vote(prob1, prob2, prob3):
+    """Fonction nous permettant de voter sur le resulat en cas d'absence de choix
+    
+    Parameters
+    ----------
+    prob1 : array-like
+        liste de probabilite pour chaque classe selon le premier algorithme
+    prob2 : array-like
+        liste de probabilite pour chaque classe selon le deuxieme algorithme
+    prob3 : array-like
+        liste de probabilite pour chaque classe selon le troisieme algorithme
+    
+    Returns
+    -------
+    int or list
+        Renvoi soit l'indexe du resultat ou une liste des resultats les plus probables
     """
-    pass
+
+    top1 = np.argsort(prob1, axis=1)[:,-3:]
+    top2 = np.argsort(prob2, axis=1)[:,-3:]
+    top3 = np.argsort(prob3, axis=1)[:,-3:]
+
+    if top1[2] == top2[2] and top1[2] == top3[2]:
+        return top1[2]
+    elif top1[2] == top2[2]:
+        return top1[2]
+    elif top1[2] == top3[2]:
+        return top1[2]
+    elif top2[2] == top3[2]:
+        return top2[2]
+    else:
+        common = list()
+        for i in top1:
+            for j in top2:
+                for k in top3:
+                    if i==k:
+                        common.append(i)
+                    elif i==j:
+                        common.append(i)
+                    elif j==k:
+                        common.append(j)
+        
+        return common

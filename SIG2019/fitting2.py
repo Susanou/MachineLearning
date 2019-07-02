@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 import argparse
 import time
 import pandas as pd
+import numpy as np
 
 from mpl_toolkits.mplot3d import Axes3D
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -72,13 +73,16 @@ def predictSGD():
     # Predict the result on some wikipedia article:
 
     predicted = gs_clf.predict(articles)
-    probs = gs_clf.predict_proba(articles)
+    prob = gs_clf.predict_proba(articles)
+    probs = np.argsort(prob, axis=1)[:,-3:]
 
     for pred in predicted:
         print("%s is the type of the text" % dataset.target_names[pred])
 
-    frame = pd.DataFrame(probs, columns=dataset.target_names)
-    print(frame)
+    frame1 = pd.DataFrame(probs, index=art_names)
+    frame2 = pd.DataFrame(prob, index=art_names, columns=dataset.target_names)
+    print(frame1)
+    print(frame2)
 
 
 #If using SVC, not able to get the the different proba of each case
@@ -121,13 +125,20 @@ def predictedSVC():
     # Predict the result on some wikipedia article:
 
     predicted = gs_clf.predict(articles)
-    probs = gs_clf.predict_proba(articles)
+    prob = gs_clf.predict_proba(articles)
+
+    predicted = gs_clf.predict(articles)
+    prob = gs_clf.predict_proba(articles)
+
+    probs = best_n = np.argsort(prob, axis=1)[:,-3:]
 
     for pred in predicted:
         print("%s is the type of the text" % dataset.target_names[pred])
 
-    frame = pd.DataFrame(probs, columns=dataset.target_names)
-    print(frame)
+    frame1 = pd.DataFrame(probs, index=art_names)
+    frame2 = pd.DataFrame(prob, index=art_names, columns=dataset.target_names)
+    print(frame1)
+    print(frame2)
 
 def predictNaiveBayes():
 
@@ -162,19 +173,24 @@ def predictNaiveBayes():
     print(cm)
 
 
+
     plt.matshow(cm, cmap=plt.cm.jet)
     plt.show()
 
     # Predict the result on some wikipedia article:
 
     predicted = gs_clf.predict(articles)
-    probs = gs_clf.predict_proba(articles)
+    prob = gs_clf.predict_proba(articles)
+
+    probs = best_n = np.argsort(prob, axis=1)[:,-3:]
 
     for pred in predicted:
         print("%s is the type of the text" % dataset.target_names[pred])
 
-    frame = pd.DataFrame(probs, columns=dataset.target_names)
-    print(frame)
+    frame1 = pd.DataFrame(probs, index=art_names)
+    frame2 = pd.DataFrame(prob, index=art_names, columns=dataset.target_names)
+    print(frame1)
+    print(frame2)
 
 if __name__ == "__main__":
     global languages_data_folder
@@ -182,6 +198,7 @@ if __name__ == "__main__":
     global docs_train, docs_test, y_train, y_test
     global vectorizer
     global articles
+    global art_names
 
     parser = argparse.ArgumentParser(description="Script for fitting according to 3 different algorithms:\n SVC, Naive Bayes OR SGD")
 
@@ -208,6 +225,16 @@ if __name__ == "__main__":
         get_page('https://fr.wikipedia.org/wiki/Arthur_Rimbaud'),
         get_page('https://fr.wikipedia.org/wiki/Charles_Baudelaire'),
         get_page('https://fr.wikipedia.org/wiki/%C3%89mile_Zola')
+    ]
+    
+    art_names=[
+        'Chopin',
+        'Hugo',
+        'hugo',
+        'zola',
+        'Rimbaud',
+        'baudelaire',
+        'zola'
     ]
 
     if args.naive:
