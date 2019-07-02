@@ -16,6 +16,7 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import SGDClassifier
 from sklearn.naive_bayes import MultinomialNB as naive
+from sklearn.svm import SVC as svc
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.datasets import load_files
@@ -25,10 +26,10 @@ from urlReader import get_page
 
 dataset = load_files('dataFitting')
 
-docs_train, docs_test, y_train, y_test = train_test_split(
-        dataset.data, dataset.target, test_size=0.25, random_state=42, shuffle=True)
-
 def fitting1():
+
+    docs_train, docs_test, y_train, y_test = train_test_split(
+        dataset.data, dataset.target, test_size=0.5, random_state=42, shuffle=True)
 
     vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
 
@@ -51,6 +52,10 @@ def fitting1():
     return gs_clf, dataset.target_names
 
 def fitting2():
+
+    docs_train, docs_test, y_train, y_test = train_test_split(
+        dataset.data, dataset.target, test_size=0.75, random_state=42, shuffle=True)
+
     vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
     #MultinomialNB Pipeline
     clf = Pipeline([
@@ -70,6 +75,9 @@ def fitting2():
     return gs_clf
 
 def fitting3():
+
+    docs_train, docs_test, y_train, y_test = train_test_split(
+        dataset.data, dataset.target, test_size=0.9, random_state=42, shuffle=True)
     
     clf = Pipeline([
         ('vect', vectorizer),
