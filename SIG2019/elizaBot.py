@@ -14,7 +14,8 @@ import string
 import re
 import fonctions_bot as fonctions
 
-from elizaFitting import fitting1
+from elizaFitting import fitting1, fitting2, fitting3
+from elizaFitting import vote
 
 class Eliza:
     """Class contenant les differentes fonctions du chatbot
@@ -23,7 +24,9 @@ class Eliza:
         self.keys = list(map(lambda x:re.compile(x[0], re.IGNORECASE),gPats))
         self.values = list(map(lambda x:x[1],gPats))
         self.freq = dict()
-        self.clf, self.names = fitting1()
+        self.clf1, self.names = fitting1()
+        self.clf2 = fitting2()
+        self.clf3 = fitting3
         self.talk = list()
 
     def traduire(self, str:str, dict:dict):
@@ -97,21 +100,13 @@ class Eliza:
             self.talk.append(s)
 
         
-        max = 0
-        imax = 0
-        predicted = self.clf.predict_proba(self.talk)
+        pred1 = self.clf1.predict_proba(talk)
+        pred2 = self.clf2.predict_proba(talk)
+        pred3 = self.clf3.predict_proba(talk)
 
-        for i, prob in enumerate(predicted[0]):
-            if prob > max:
-                max = prob
-                imax = i
+        vote = vote(pred1, pred2, pred3)
 
-        print(max, " ", self.names[imax])
-
-        if max*100 > 25:
-            return "The theme is %s with a probability of %.2f" % (self.names[imax], max*100)
-        else:
-            return self.reponse(s)
+        return self.reponse(s)
 
         
 

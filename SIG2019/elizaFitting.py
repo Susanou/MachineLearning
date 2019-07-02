@@ -30,7 +30,7 @@ docs_train, docs_test, y_train, y_test = train_test_split(
 
 def fitting1():
 
-    vectorizer = TfidfVectorizer(ngram_range=(1,3), analyzer='word', use_idf=True)
+    vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
 
     clf = Pipeline([
         ('vect', vectorizer),
@@ -51,11 +51,43 @@ def fitting1():
     return gs_clf, dataset.target_names
 
 def fitting2():
+    vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
+    #MultinomialNB Pipeline
+    clf = Pipeline([
+        ('vect', vectorizer),
+        ('clf', naive(alpha=1.0, fit_prior=True))
+    ], verbose=True)
 
-    dataset = load_files('dataFitting')
+    parameters={
+        'vect__ngram_range': [(1, 1), (1, 2), (1,3), (1,4), (1,5)],
+        'clf__fit_prior': (True, False),
+        'clf__alpha': (1.0, 0.1, 0.5, 2.0, .25, 0.75, 0.002),
+    }
 
-    docs_train, docs_test, y_train, y_test = train_test_split(
-        dataset.data, dataset.target, test_size=0.25, random_state=42, shuffle=True)
+    gs_clf = GridSearchCV(clf, parameters, cv=5, iid=False, n_jobs=-1)
+    gs_clf.fit(docs_train, y_train)
+
+    return gs_clf
+
+def fitting3():
+    
+    clf = Pipeline([
+        ('vect', vectorizer),
+        ('clf', svc(tol=1e-3, verbose=0, random_state=42,
+            C=1.0, max_iter=-1, gamma='scale', probability=True))
+    ], verbose = True)
+
+    parameters={
+        'vect__ngram_range': [(1, 1), (1, 2), (1,3), (1,4), (1,5)],
+        'clf__tol':(1e-3, 1e-2, 5e-3, 2e-3, 3e-3,4e-3),
+        'clf__gamma':('auto', 'scale'),
+        'clf__C':(1.0,.1,.2,.3,.4, 0.5, 0.6, 0.7, 0.8, 0.9)
+    }
+
+    gs_clf = GridSearchCV(clf, parameters, cv=5, iid=False, n_jobs=-1)
+    gs_clf.fit(docs_train, y_train)
+
+    return gs_clf
 
 def max(prob):
     max=prob[0]
