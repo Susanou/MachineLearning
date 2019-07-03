@@ -26,7 +26,7 @@ class Eliza:
         self.freq = dict()
         self.clf1, self.names = fitting1()
         self.clf2 = fitting2()
-        self.clf3 = fitting3
+        self.clf3 = fitting3()
         self.talk = list()
 
     def traduire(self, str:str, dict:dict):
@@ -100,9 +100,9 @@ class Eliza:
             self.talk.append(s)
 
         
-        pred1 = self.clf1.predict_proba(talk)
-        pred2 = self.clf2.predict_proba(talk)
-        pred3 = self.clf3.predict_proba(talk)
+        pred1 = self.clf1.predict_proba(self.talk)
+        pred2 = self.clf2.predict_proba(self.talk)
+        pred3 = self.clf3.predict_proba(self.talk)
 
         vote = vote(pred1, pred2, pred3)
 

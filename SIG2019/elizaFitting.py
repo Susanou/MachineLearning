@@ -22,7 +22,6 @@ from sklearn.pipeline import Pipeline
 from sklearn.datasets import load_files
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
-from urlReader import get_page
 
 dataset = load_files('dataFitting')
 
@@ -79,6 +78,8 @@ def fitting3():
     docs_train, docs_test, y_train, y_test = train_test_split(
         dataset.data, dataset.target, test_size=0.9, random_state=42, shuffle=True)
     
+    vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
+
     clf = Pipeline([
         ('vect', vectorizer),
         ('clf', svc(tol=1e-3, verbose=0, random_state=42,

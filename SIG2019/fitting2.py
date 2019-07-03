@@ -127,9 +127,6 @@ def predictedSVC():
     predicted = gs_clf.predict(articles)
     prob = gs_clf.predict_proba(articles)
 
-    predicted = gs_clf.predict(articles)
-    prob = gs_clf.predict_proba(articles)
-
     probs = best_n = np.argsort(prob, axis=1)[:,-3:]
 
     for pred in predicted:
@@ -214,7 +211,7 @@ if __name__ == "__main__":
     languages_data_folder = args.dataPath
     dataset = load_files(languages_data_folder)
     docs_train, docs_test, y_train, y_test = train_test_split(
-        dataset.data, dataset.target, test_size=0.5, random_state=42, shuffle=True)
+        dataset.data, dataset.target, test_size=0.99, random_state=42, shuffle=True)
     vectorizer = TfidfVectorizer(ngram_range=(1,3), analyzer='word', use_idf=True)
 
     articles = [
