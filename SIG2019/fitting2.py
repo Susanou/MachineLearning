@@ -127,7 +127,7 @@ def predictedSVC():
     predicted = gs_clf.predict(articles)
     prob = gs_clf.predict_proba(articles)
 
-    probs = best_n = np.argsort(prob, axis=1)[:,-3:]
+    probs = np.argsort(prob, axis=1)[:,-3:]
 
     for pred in predicted:
         print("%s is the type of the text" % dataset.target_names[pred])
@@ -169,8 +169,6 @@ def predictNaiveBayes():
     cm = metrics.confusion_matrix(y_test, y_predicted)
     print(cm)
 
-
-
     plt.matshow(cm, cmap=plt.cm.jet)
     plt.show()
 
@@ -179,10 +177,13 @@ def predictNaiveBayes():
     predicted = gs_clf.predict(articles)
     prob = gs_clf.predict_proba(articles)
 
-    probs = best_n = np.argsort(prob, axis=1)[:,-3:]
+    probs = np.argsort(prob, axis=1)[:,-3:]
 
     for pred in predicted:
         print("%s is the type of the text" % dataset.target_names[pred])
+
+
+    print("this is a test ", probs[0][1])
 
     frame1 = pd.DataFrame(probs, index=art_names)
     frame2 = pd.DataFrame(prob, index=art_names, columns=dataset.target_names)
@@ -212,7 +213,7 @@ if __name__ == "__main__":
     dataset = load_files(languages_data_folder)
     docs_train, docs_test, y_train, y_test = train_test_split(
         dataset.data, dataset.target, test_size=0.99, random_state=42, shuffle=True)
-    vectorizer = TfidfVectorizer(ngram_range=(1,3), analyzer='word', use_idf=True)
+    vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
 
     articles = [
         get_page('https://fr.wikipedia.org/wiki/Fr%C3%A9d%C3%A9ric_Chopin'),

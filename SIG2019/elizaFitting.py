@@ -28,7 +28,7 @@ dataset = load_files('dataFitting')
 def fitting1():
 
     docs_train, docs_test, y_train, y_test = train_test_split(
-        dataset.data, dataset.target, test_size=0.5, random_state=42, shuffle=True)
+        dataset.data, dataset.target, test_size=0.99, random_state=42, shuffle=True)
 
     vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
 
@@ -37,7 +37,7 @@ def fitting1():
         ('clf', SGDClassifier(loss='log', penalty='l2',
                           alpha=1e-3, random_state=42,
                           max_iter=5, tol=None))
-    ])
+    ], verbose= True)
 
     parameters = {
         'vect__ngram_range': [(1, 1), (1, 2), (1,3), (1,4), (1,5)],
@@ -53,14 +53,14 @@ def fitting1():
 def fitting2():
 
     docs_train, docs_test, y_train, y_test = train_test_split(
-        dataset.data, dataset.target, test_size=0.75, random_state=42, shuffle=True)
+        dataset.data, dataset.target, test_size=0.99, random_state=42, shuffle=True)
 
     vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
     #MultinomialNB Pipeline
     clf = Pipeline([
         ('vect', vectorizer),
         ('clf', naive(alpha=1.0, fit_prior=True))
-    ], verbose=True)
+    ], verbose = True)
 
     parameters={
         'vect__ngram_range': [(1, 1), (1, 2), (1,3), (1,4), (1,5)],
@@ -73,18 +73,18 @@ def fitting2():
 
     return gs_clf
 
-def fitting3():
+""" def fitting3():
 
     docs_train, docs_test, y_train, y_test = train_test_split(
-        dataset.data, dataset.target, test_size=0.9, random_state=42, shuffle=True)
+        dataset.data, dataset.target, test_size=0.99, random_state=42, shuffle=True)
     
     vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
 
     clf = Pipeline([
         ('vect', vectorizer),
-        ('clf', svc(tol=1e-3, verbose=0, random_state=42,
+        ('clf', svc(tol=1e-3, verbose=1, random_state=42,
             C=1.0, max_iter=-1, gamma='scale', probability=True))
-    ], verbose = True)
+    ])
 
     parameters={
         'vect__ngram_range': [(1, 1), (1, 2), (1,3), (1,4), (1,5)],
@@ -96,17 +96,7 @@ def fitting3():
     gs_clf = GridSearchCV(clf, parameters, cv=5, iid=False, n_jobs=-1)
     gs_clf.fit(docs_train, y_train)
 
-    return gs_clf
-
-def max(prob):
-    max=prob[0]
-    maxi=0
-    for i, p in enumerate(prob):
-        if max < p:
-            max = p
-            maxi = i
-
-    return maxi
+    return gs_clf """
 
 def vote(prob1, prob2, prob3):
     """Fonction nous permettant de voter sur le resulat en cas d'absence de choix
@@ -128,26 +118,21 @@ def vote(prob1, prob2, prob3):
 
     top1 = np.argsort(prob1, axis=1)[:,-3:]
     top2 = np.argsort(prob2, axis=1)[:,-3:]
-    top3 = np.argsort(prob3, axis=1)[:,-3:]
+    #top3 = np.argsort(prob3, axis=1)[:,-3:]
 
-    if top1[2] == top2[2] and top1[2] == top3[2]:
+    top1 = top1[0]
+    top2 = top2[0]
+    #top3 = top3[0]
+
+    if top1[2] == top2[2]: # and top1[2] == top3[2]:
         return top1[2]
     elif top1[2] == top2[2]:
         return top1[2]
+        """
     elif top1[2] == top3[2]:
         return top1[2]
     elif top2[2] == top3[2]:
         return top2[2]
+        """
     else:
-        common = list()
-        for i in top1:
-            for j in top2:
-                for k in top3:
-                    if i==k:
-                        common.append(i)
-                    elif i==j:
-                        common.append(i)
-                    elif j==k:
-                        common.append(j)
-        
-        return common
+        return list(set(top1) & set(top2))# & set(top3))

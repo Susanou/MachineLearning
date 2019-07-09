@@ -13,8 +13,9 @@ import random
 import string
 import re
 import fonctions_bot as fonctions
+import numpy as np
 
-from elizaFitting import fitting1, fitting2, fitting3
+from elizaFitting import fitting1, fitting2 #,fitting3
 from elizaFitting import vote
 
 class Eliza:
@@ -26,7 +27,7 @@ class Eliza:
         self.freq = dict()
         self.clf1, self.names = fitting1()
         self.clf2 = fitting2()
-        self.clf3 = fitting3()
+        #self.clf3 = fitting3()
         self.talk = list()
 
     def traduire(self, str:str, dict:dict):
@@ -102,9 +103,23 @@ class Eliza:
         
         pred1 = self.clf1.predict_proba(self.talk)
         pred2 = self.clf2.predict_proba(self.talk)
-        pred3 = self.clf3.predict_proba(self.talk)
+        #pred3 = self.clf3.predict_proba(self.talk)
 
-        vote = vote(pred1, pred2, pred3)
+        pred3 = np.array([-1, -1, -1])
+
+        result = vote(pred1, pred2, pred3)
+        
+        print("resultat du vote: ", result)
+
+        for i in np.nditer(result, flags=["refs_ok"]):
+            print(i)
+            if len(str(i)) > 1:
+                for j in i:
+                    print(j)
+                    print("resultat du vote: ", self.names[int(j)])
+            else:
+                print(i)
+                print("resultat du vote: ", self.names[int(i)])
 
         return self.reponse(s)
 
@@ -229,7 +244,7 @@ def interface():
             print(s)
         while s[-1] in '!.':
             s = s[:-1]
-        print(therapist.search(s))
+        print(therapist.reponse(s))
 
 
 if __name__ == "__main__":
