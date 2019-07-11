@@ -74,13 +74,13 @@ class Eliza:
 
         r = random.random()
         p = 0.2 # probabilite de retour sur une question precedente
-        q = 0.4 # probabilite pour selectionne de combien on fait le retour
+        q = 0.5 # probabilite pour selectionne de combien on fait le retour
 
-        if r < p and len(self.log) > 3:
+        if r < p and len(self.log) > 3 and not (str == 'quit' or str == 'exit'):
             back = 1
             s = q
             print(r/p>s)
-            while r/p > s and back < 5 and back < len(self.log) - 1:
+            while r/p > s and back < 5 and back < len(self.log):
                 s += q**back                
                 back += 1
 
@@ -90,7 +90,8 @@ class Eliza:
 
             print()
             print(self.log)
-            print("going back to #", back)
+            print("going back to #", back+1)
+            print('answering: ', str)
         else:
             self.log.append(log)
 
