@@ -4,7 +4,7 @@
 #  All rights reserved.
 #
 # Author: Cameron Hochberg
-# Date: 05/2019
+# Date: 07/2019
 # Homepage: https://github.com/Susanou
 # Email: cam.hochberg@gmail.com
 #
@@ -28,7 +28,7 @@ dataset = load_files('dataFitting')
 def fitting1():
 
     docs_train, docs_test, y_train, y_test = train_test_split(
-        dataset.data, dataset.target, test_size=0.99, random_state=42, shuffle=True)
+        dataset.data, dataset.target, test_size=0.75, random_state=42, shuffle=True)
 
     vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
 
@@ -53,7 +53,7 @@ def fitting1():
 def fitting2():
 
     docs_train, docs_test, y_train, y_test = train_test_split(
-        dataset.data, dataset.target, test_size=0.99, random_state=42, shuffle=True)
+        dataset.data, dataset.target, test_size=0.75, random_state=42, shuffle=True)
 
     vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
     #MultinomialNB Pipeline
@@ -72,11 +72,11 @@ def fitting2():
     gs_clf.fit(docs_train, y_train)
 
     return gs_clf
-
-""" def fitting3():
+    
+def fitting3():
 
     docs_train, docs_test, y_train, y_test = train_test_split(
-        dataset.data, dataset.target, test_size=0.99, random_state=42, shuffle=True)
+        dataset.data, dataset.target, test_size=0.9, random_state=42, shuffle=True)
     
     vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
 
@@ -96,7 +96,7 @@ def fitting2():
     gs_clf = GridSearchCV(clf, parameters, cv=5, iid=False, n_jobs=-1)
     gs_clf.fit(docs_train, y_train)
 
-    return gs_clf """
+    return gs_clf
 
 def vote(prob1, prob2, prob3):
     """Fonction nous permettant de voter sur le resulat en cas d'absence de choix
@@ -118,21 +118,45 @@ def vote(prob1, prob2, prob3):
 
     top1 = np.argsort(prob1, axis=1)[:,-3:]
     top2 = np.argsort(prob2, axis=1)[:,-3:]
-    #top3 = np.argsort(prob3, axis=1)[:,-3:]
+    top3 = np.argsort(prob3, axis=1)[:,-3:]
 
     top1 = top1[0]
     top2 = top2[0]
-    #top3 = top3[0]
+    top3 = top3[0]
 
-    if top1[2] == top2[2]: # and top1[2] == top3[2]:
+    #top3 = [0, 0, 0]
+
+    sums = dict()
+
+    if top1[2] == top2[2] and top1[2] == top3[2]:
         return top1[2]
     elif top1[2] == top2[2]:
         return top1[2]
-        """
     elif top1[2] == top3[2]:
         return top1[2]
     elif top2[2] == top3[2]:
         return top2[2]
-        """
     else:
-        return list(set(top1) & set(top2))# & set(top3))
+        
+        for i in top1:
+            if i in sums:
+                sums[i] += prob1[0][i]
+            else:
+                sums[i] = prob1[0][i]
+        for j in top2:
+            if j in sums:
+                sums[j] += prob2[0][j]
+            else:
+                sums[j] = prob2[0][j]
+        for k in top3:
+            break           # cut off once speed of algorithm fixed or once officially pushed
+            if k in sums:
+                sums[k] += prob3[0][k]
+            else:
+                sums[k] = prob3[0][k]
+
+        print(sums)
+
+        maxV = max(sums.values())
+        maxK = [k for k, v in sums.items() if v == maxV]
+        return maxK

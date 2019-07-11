@@ -15,7 +15,7 @@ import re
 import fonctions_bot as fonctions
 import numpy as np
 
-from elizaFitting import fitting1, fitting2 #,fitting3
+from elizaFitting import fitting1, fitting2,fitting3
 from elizaFitting import vote
 
 class Eliza:
@@ -27,8 +27,9 @@ class Eliza:
         self.freq = dict()
         self.clf1, self.names = fitting1()
         self.clf2 = fitting2()
-        #self.clf3 = fitting3()
+        self.clf3 = fitting3()
         self.talk = list()
+        self.log = list()
 
     def traduire(self, str:str, dict:dict):
         """Fonction permettant de 'traduire' certains mots
@@ -69,6 +70,21 @@ class Eliza:
         str
             Renvoi la reponse de ELIZA
         """
+        log = str
+
+        r = random.random()
+        p = 0.1 # probabilite de retour sur une question precedente
+        q = 0.1 # probabilite pour selectionne de combien on fait le retour
+
+        if r < p and len(self.log) > 3:
+            back = 0
+            s = q
+            while r/p > s and back < 5:
+                back += 1
+                s += q**back
+            str = self.log[-back]
+
+        self.log.append(log)
 
         for i in range(0, len(self.keys)):
             match = self.keys[i].match(str)
@@ -99,13 +115,12 @@ class Eliza:
             self.talk[0] += " " + s
         else:
             self.talk.append(s)
-
         
         pred1 = self.clf1.predict_proba(self.talk)
         pred2 = self.clf2.predict_proba(self.talk)
-        #pred3 = self.clf3.predict_proba(self.talk)
+        pred3 = self.clf3.predict_proba(self.talk)
 
-        pred3 = np.array([-1, -1, -1])
+        #pred3 = np.array([1e-5, 1e-5, 1e-5])
 
         result = vote(pred1, pred2, pred3)
         
