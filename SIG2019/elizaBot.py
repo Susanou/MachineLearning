@@ -25,9 +25,9 @@ class Eliza:
         self.keys = list(map(lambda x:re.compile(x[0], re.IGNORECASE),gPats))
         self.values = list(map(lambda x:x[1],gPats))
         self.freq = dict()
-        self.clf1, self.names = fitting1()
-        self.clf2 = fitting2()
-        self.clf3 = fitting3()
+        #self.clf1, self.names = fitting1()
+        #self.clf2 = fitting2()
+        #self.clf3 = fitting3()
         self.talk = list()
         self.log = list()
 
@@ -73,18 +73,26 @@ class Eliza:
         log = str
 
         r = random.random()
-        p = 0.1 # probabilite de retour sur une question precedente
-        q = 0.1 # probabilite pour selectionne de combien on fait le retour
+        p = 0.2 # probabilite de retour sur une question precedente
+        q = 0.4 # probabilite pour selectionne de combien on fait le retour
 
         if r < p and len(self.log) > 3:
-            back = 0
+            back = 1
             s = q
-            while r/p > s and back < 5:
+            print(r/p>s)
+            while r/p > s and back < 5 and back < len(self.log) - 1:
+                s += q**back                
                 back += 1
-                s += q**back
-            str = self.log[-back]
 
-        self.log.append(log)
+            str = self.log[-back]
+            
+            self.log.append(log)
+
+            print()
+            print(self.log)
+            print("going back to #", back)
+        else:
+            self.log.append(log)
 
         for i in range(0, len(self.keys)):
             match = self.keys[i].match(str)
@@ -250,16 +258,21 @@ def interface():
     print("Bonjour comment allez vous aujourd'hui?\n")
 
     s = ''
+
     therapist = Eliza()
-    while s != 'quit':
+    next = True
+    while next:
         try:
-            s = input('> ') + " "
+            s = input('> ')
         except EOFError:
             s = 'quit'
             print(s)
         while s[-1] in '!.':
             s = s[:-1]
         print(therapist.reponse(s))
+
+        if s == 'quit' or s == 'exit':
+            next = False
 
 
 if __name__ == "__main__":
