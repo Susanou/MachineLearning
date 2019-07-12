@@ -25,9 +25,9 @@ class Eliza:
         self.keys = list(map(lambda x:re.compile(x[0], re.IGNORECASE),gPats))
         self.values = list(map(lambda x:x[1],gPats))
         self.freq = dict()
-        #self.clf1, self.names = fitting1()
-        #self.clf2 = fitting2()
-        #self.clf3 = fitting3()
+        self.clf1, self.names = fitting1()
+        self.clf2 = fitting2()
+        self.clf3 = fitting3()
         self.talk = list()
         self.log = list()
 
@@ -76,6 +76,7 @@ class Eliza:
         p = 0.2 # probabilite de retour sur une question precedente
         q = 0.5 # probabilite pour selectionne de combien on fait le retour
 
+        # Partie servant pour repondre a une question precedente aleatoirement
         if r < p and len(self.log) > 3 and not (str == 'quit' or str == 'exit'):
             back = 1
             s = q
@@ -131,21 +132,14 @@ class Eliza:
 
         #pred3 = np.array([1e-5, 1e-5, 1e-5])
 
-        result = vote(pred1, pred2, pred3)
+        result, totalP = vote(pred1, pred2, pred3)
         
         print("resultat du vote: ", result)
 
-        for i in np.nditer(result, flags=["refs_ok"]):
-            print(i)
-            if len(str(i)) > 1:
-                for j in i:
-                    print(j)
-                    print("resultat du vote: ", self.names[int(j)])
-            else:
-                print(i)
-                print("resultat du vote: ", self.names[int(i)])
-
-        return self.reponse(s)
+        if result != None and totalP > .75:
+            return "Je pense que vous parlez de: ", self.names[result]
+        else:
+            return self.reponse(s)
 
         
 
@@ -270,7 +264,7 @@ def interface():
             print(s)
         while s[-1] in '!.':
             s = s[:-1]
-        print(therapist.reponse(s))
+        print(therapist.search(s))
 
         if s == 'quit' or s == 'exit':
             next = False

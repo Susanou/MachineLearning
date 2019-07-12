@@ -25,10 +25,10 @@ from sklearn import metrics
 
 dataset = load_files('dataFitting')
 
-def fitting1():
+def fitting1():     
 
     docs_train, docs_test, y_train, y_test = train_test_split(
-        dataset.data, dataset.target, test_size=0.75, random_state=42, shuffle=True)
+        dataset.data, dataset.target, test_size=0.90, random_state=42, shuffle=True)
 
     vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
 
@@ -37,7 +37,7 @@ def fitting1():
         ('clf', SGDClassifier(loss='log', penalty='l2',
                           alpha=1e-3, random_state=42,
                           max_iter=5, tol=None))
-    ], verbose= True)
+    ])
 
     parameters = {
         'vect__ngram_range': [(1, 1), (1, 2), (1,3), (1,4), (1,5)],
@@ -53,14 +53,14 @@ def fitting1():
 def fitting2():
 
     docs_train, docs_test, y_train, y_test = train_test_split(
-        dataset.data, dataset.target, test_size=0.75, random_state=42, shuffle=True)
+        dataset.data, dataset.target, test_size=0.85, random_state=42, shuffle=True)
 
     vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
     #MultinomialNB Pipeline
     clf = Pipeline([
         ('vect', vectorizer),
         ('clf', naive(alpha=1.0, fit_prior=True))
-    ], verbose = True)
+    ])
 
     parameters={
         'vect__ngram_range': [(1, 1), (1, 2), (1,3), (1,4), (1,5)],
@@ -84,7 +84,7 @@ def fitting3():
         ('vect', vectorizer),
         ('clf', svc(tol=1e-3, verbose=1, random_state=42,
             C=1.0, max_iter=-1, gamma='scale', probability=True))
-    ])
+    ], verbose=True)
 
     parameters={
         'vect__ngram_range': [(1, 1), (1, 2), (1,3), (1,4), (1,5)],
@@ -149,7 +149,6 @@ def vote(prob1, prob2, prob3):
             else:
                 sums[j] = prob2[0][j]
         for k in top3:
-            break           # cut off once speed of algorithm fixed or once officially pushed
             if k in sums:
                 sums[k] += prob3[0][k]
             else:
@@ -159,4 +158,4 @@ def vote(prob1, prob2, prob3):
 
         maxV = max(sums.values())
         maxK = [k for k, v in sums.items() if v == maxV]
-        return maxK
+        return maxK, maxV
