@@ -80,7 +80,7 @@ class Eliza:
         if r < p and len(self.log) > 3 and not (str == 'quit' or str == 'exit'):
             back = 1
             s = q
-            print(r/p>s)
+
             while r/p > s and back < 5 and back < len(self.log):
                 s += q**back                
                 back += 1
@@ -130,13 +130,11 @@ class Eliza:
         pred2 = self.clf2.predict_proba(self.talk)
         pred3 = self.clf3.predict_proba(self.talk)
 
-        #pred3 = np.array([1e-5, 1e-5, 1e-5])
+        pred3 = None
 
         result, totalP = vote(pred1, pred2, pred3)
-        
-        print("resultat du vote: ", result)
 
-        if result != None and totalP > .75:
+        if result != None and totalP > .5:
             return "Je pense que vous parlez de: ", self.names[result]
         else:
             return self.reponse(s)

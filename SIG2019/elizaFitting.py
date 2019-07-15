@@ -28,7 +28,7 @@ dataset = load_files('dataFitting')
 def fitting1():     
 
     docs_train, docs_test, y_train, y_test = train_test_split(
-        dataset.data, dataset.target, test_size=0.90, random_state=42, shuffle=True)
+        dataset.data, dataset.target, test_size=0.9, random_state=42, shuffle=True)
 
     vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
 
@@ -53,7 +53,7 @@ def fitting1():
 def fitting2():
 
     docs_train, docs_test, y_train, y_test = train_test_split(
-        dataset.data, dataset.target, test_size=0.85, random_state=42, shuffle=True)
+        dataset.data, dataset.target, test_size=0.9, random_state=42, shuffle=True)
 
     vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
     #MultinomialNB Pipeline
@@ -82,7 +82,7 @@ def fitting3():
 
     clf = Pipeline([
         ('vect', vectorizer),
-        ('clf', svc(tol=1e-3, verbose=1, random_state=42,
+        ('clf', svc(tol=1e-3, random_state=42,
             C=1.0, max_iter=-1, gamma='scale', probability=True))
     ], verbose=True)
 
@@ -112,8 +112,10 @@ def vote(prob1, prob2, prob3):
     
     Returns
     -------
-    int or list
-        Renvoi soit l'indexe du resultat ou une liste des resultats les plus probables
+    int
+        Renvoi soit l'indexe du resultat du resultat le plus probable
+    float
+        La  probabilite associee au resultat
     """
 
     top1 = np.argsort(prob1, axis=1)[:,-3:]
@@ -129,13 +131,13 @@ def vote(prob1, prob2, prob3):
     sums = dict()
 
     if top1[2] == top2[2] and top1[2] == top3[2]:
-        return top1[2]
+        return top1[2], prob1[0][top1[2]]
     elif top1[2] == top2[2]:
-        return top1[2]
+        return top1[2], prob1[0][top1[2]]
     elif top1[2] == top3[2]:
-        return top1[2]
+        return top1[2], prob1[0][top1[2]]
     elif top2[2] == top3[2]:
-        return top2[2]
+        return top2[2], prob2[0][top2[2]]
     else:
         
         for i in top1:
@@ -154,8 +156,7 @@ def vote(prob1, prob2, prob3):
             else:
                 sums[k] = prob3[0][k]
 
-        print(sums)
-
         maxV = max(sums.values())
         maxK = [k for k, v in sums.items() if v == maxV]
-        return maxK, maxV
+
+        return (maxK[0], maxV)
