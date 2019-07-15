@@ -130,7 +130,7 @@ class Eliza:
         pred2 = self.clf2.predict_proba(self.talk)
         pred3 = self.clf3.predict_proba(self.talk)
 
-        pred3 = None
+        #pred3 = None
 
         result, totalP = vote(pred1, pred2, pred3)
 

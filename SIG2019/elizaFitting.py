@@ -28,7 +28,7 @@ dataset = load_files('dataFitting')
 def fitting1():     
 
     docs_train, docs_test, y_train, y_test = train_test_split(
-        dataset.data, dataset.target, test_size=0.9, random_state=42, shuffle=True)
+        dataset.data, dataset.target, test_size=0.99, random_state=42, shuffle=True)
 
     vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
 
@@ -53,7 +53,7 @@ def fitting1():
 def fitting2():
 
     docs_train, docs_test, y_train, y_test = train_test_split(
-        dataset.data, dataset.target, test_size=0.9, random_state=42, shuffle=True)
+        dataset.data, dataset.target, test_size=0.99, random_state=42, shuffle=True)
 
     vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
     #MultinomialNB Pipeline
@@ -76,7 +76,7 @@ def fitting2():
 def fitting3():
 
     docs_train, docs_test, y_train, y_test = train_test_split(
-        dataset.data, dataset.target, test_size=0.9, random_state=42, shuffle=True)
+        dataset.data, dataset.target, test_size=0.99, random_state=42, shuffle=True)
     
     vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
 
@@ -131,13 +131,13 @@ def vote(prob1, prob2, prob3):
     sums = dict()
 
     if top1[2] == top2[2] and top1[2] == top3[2]:
-        return top1[2], prob1[0][top1[2]]
+        return top1[2], prob1[0][top1[2]]+.5
     elif top1[2] == top2[2]:
-        return top1[2], prob1[0][top1[2]]
+        return top1[2], prob1[0][top1[2]]+.5
     elif top1[2] == top3[2]:
-        return top1[2], prob1[0][top1[2]]
+        return top1[2], prob1[0][top1[2]]+.5
     elif top2[2] == top3[2]:
-        return top2[2], prob2[0][top2[2]]
+        return top2[2], prob2[0][top2[2]]+.5
     else:
         
         for i in top1:
