@@ -134,8 +134,8 @@ class Eliza:
 
         result, totalP = vote(pred1, pred2, pred3)
 
-        if result != None and totalP > .5:
-            return "Je pense que vous parlez de: ", self.names[result]
+        if result != None and totalP > .7 and s!="quit":
+            return "Je pense que vous parlez de: {0} avec une proba de {1}".format(self.names[result], totalP)
         else:
             return self.reponse(s)
 
