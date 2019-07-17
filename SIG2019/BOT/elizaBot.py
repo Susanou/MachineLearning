@@ -12,7 +12,6 @@
 import random
 import string
 import re
-import fonctions_bot as fonctions
 import numpy as np
 
 from elizaFitting import fitting1, fitting2,fitting3
@@ -134,7 +133,7 @@ class Eliza:
 
         result, totalP = vote(pred1, pred2, pred3)
 
-        if result != None and totalP > .7 and s!="quit":
+        if result != None and totalP > .75 and not (s=="quit" or s=="exit"):
             return "Je pense que vous parlez de: {0} avec une proba de {1}".format(self.names[result], totalP)
         else:
             return self.reponse(s)

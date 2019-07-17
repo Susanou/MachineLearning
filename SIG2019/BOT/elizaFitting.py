@@ -23,7 +23,7 @@ from sklearn.datasets import load_files
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
 
-dataset = load_files('dataFitting')
+dataset = load_files('../dataFitting')
 
 def fitting1():     
 
@@ -131,13 +131,13 @@ def vote(prob1, prob2, prob3):
     sums = dict()
 
     if top1[2] == top2[2] and top1[2] == top3[2]:
-        return top1[2], prob1[0][top1[2]]+.5
+        return top1[2], prob1[0][top1[2]]+prob2[0][top1[2]]+prob3[0][top1[2]]
     elif top1[2] == top2[2]:
-        return top1[2], prob1[0][top1[2]]+.5
+        return top1[2], prob1[0][top1[2]]+prob2[0][top1[2]]+.2
     elif top1[2] == top3[2]:
-        return top1[2], prob1[0][top1[2]]+.5
+        return top1[2], prob1[0][top1[2]]+prob3[0][top1[2]]+.2
     elif top2[2] == top3[2]:
-        return top2[2], prob2[0][top2[2]]+.5
+        return top2[2], prob2[0][top1[2]]+prob3[0][top1[2]]+.2
     else:
         
         for i in top1:
