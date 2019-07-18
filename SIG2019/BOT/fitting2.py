@@ -17,7 +17,10 @@ import argparse
 import time
 import pandas as pd
 import numpy as np
+import joblib
+import urllib
 
+from bs4 import BeautifulSoup
 from mpl_toolkits.mplot3d import Axes3D
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import SGDClassifier
@@ -31,7 +34,26 @@ from sklearn.pipeline import Pipeline
 from sklearn.datasets import load_files
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
-from urlReader import get_page
+
+def get_page(url: str):
+    """Fonction pour recuperer le texte nettoyer d'une page html
+    
+    Parameters
+    ----------
+    url : str
+        Url de la page
+    
+    Returns
+    -------
+    str
+        Renvoi le texte de la page sans le code HTML
+    """
+    response = urllib.request.urlopen("%s" % url)
+    html = response.read()
+    soup = BeautifulSoup(html, "html5lib")
+    text = soup.get_text(strip=True)
+
+    return text
 
 def predictSGD(): 
 
@@ -83,6 +105,8 @@ def predictSGD():
     frame2 = pd.DataFrame(prob, index=art_names, columns=dataset.target_names)
     print(frame1)
     print(frame2)
+
+    joblib.dump(gs_clf, "sgd_model.plk")
 
 
 #If using SVC, not able to get the the different proba of each case
@@ -137,6 +161,8 @@ def predictedSVC():
     print(frame1)
     print(frame2)
 
+    joblib.dump(gs_clf, "svc_model.plk")
+
 def predictNaiveBayes():
 
     start = time.time()
@@ -190,6 +216,8 @@ def predictNaiveBayes():
     print(frame1)
     print(frame2)
 
+    joblib.dump(gs_clf, "naive_model.plk")
+
 if __name__ == "__main__":
     global languages_data_folder
     global dataset
@@ -203,7 +231,7 @@ if __name__ == "__main__":
     parser.add_argument("-n", "--naive", action="store_true", help='Use the Naive Bayes algorithm')
     parser.add_argument("-g", '--sgd', action='store_true', help="Use the SVG algorithm")
     parser.add_argument("-c", '--svc', action="store_true", help="Use the SVC algorithm")
-    parser.add_argument("dataPath", default="dataFitting",nargs='?', type=str, help="Path to the folder where all the text data is stored")
+    parser.add_argument("dataPath", default="../dataFitting",nargs='?', type=str, help="Path to the folder where all the text data is stored")
 
     args = parser.parse_args()
 
@@ -212,7 +240,7 @@ if __name__ == "__main__":
     languages_data_folder = args.dataPath
     dataset = load_files(languages_data_folder)
     docs_train, docs_test, y_train, y_test = train_test_split(
-        dataset.data, dataset.target, test_size=0.99, random_state=42, shuffle=True)
+        dataset.data, dataset.target, test_size=0.5, random_state=42, shuffle=True)
     vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
 
     articles = [

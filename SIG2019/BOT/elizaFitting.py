@@ -9,9 +9,10 @@
 # Email: cam.hochberg@gmail.com
 #
 
-import sys
+import sys, os
 import matplotlib.pyplot as plt
 import numpy as np
+import joblib
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import SGDClassifier
@@ -26,77 +27,85 @@ from sklearn import metrics
 dataset = load_files('../dataFitting')
 
 def fitting1():     
+    if not os.path.isfile("sgd_model.pkl"):
+        docs_train, docs_test, y_train, y_test = train_test_split(
+            dataset.data, dataset.target, test_size=0.99, random_state=42, shuffle=True)
 
-    docs_train, docs_test, y_train, y_test = train_test_split(
-        dataset.data, dataset.target, test_size=0.99, random_state=42, shuffle=True)
+        vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
 
-    vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
+        clf = Pipeline([
+            ('vect', vectorizer),
+            ('clf', SGDClassifier(loss='log', penalty='l2',
+                            alpha=1e-3, random_state=42,
+                            max_iter=5, tol=None))
+        ])
 
-    clf = Pipeline([
-        ('vect', vectorizer),
-        ('clf', SGDClassifier(loss='log', penalty='l2',
-                          alpha=1e-3, random_state=42,
-                          max_iter=5, tol=None))
-    ])
+        parameters = {
+            'vect__ngram_range': [(1, 1), (1, 2), (1,3), (1,4), (1,5)],
+            
+            'clf__alpha': (1e-2, 1e-3, 5e-3, 7e-3, 4e-3, 3e-3, 2e-3, 8e-3, 9e-3),
+        }
+        gs_clf = GridSearchCV(clf, parameters, cv=5, iid=False, n_jobs=-1)
 
-    parameters = {
-        'vect__ngram_range': [(1, 1), (1, 2), (1,3), (1,4), (1,5)],
-        
-        'clf__alpha': (1e-2, 1e-3, 5e-3, 7e-3, 4e-3, 3e-3, 2e-3, 8e-3, 9e-3),
-    }
-    gs_clf = GridSearchCV(clf, parameters, cv=5, iid=False, n_jobs=-1)
+        gs_clf.fit(docs_train, y_train)
 
-    gs_clf.fit(docs_train, y_train)
-
-    return gs_clf, dataset.target_names
+        return gs_clf, dataset.target_names
+    else:
+        return joblib.load("sgd_model.pkl")
 
 def fitting2():
 
-    docs_train, docs_test, y_train, y_test = train_test_split(
-        dataset.data, dataset.target, test_size=0.99, random_state=42, shuffle=True)
+    if not os.path.isfile("naive_model.pkl"):
+        docs_train, docs_test, y_train, y_test = train_test_split(
+            dataset.data, dataset.target, test_size=0.99, random_state=42, shuffle=True)
 
-    vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
-    #MultinomialNB Pipeline
-    clf = Pipeline([
-        ('vect', vectorizer),
-        ('clf', naive(alpha=1.0, fit_prior=True))
-    ])
+        vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
+        #MultinomialNB Pipeline
+        clf = Pipeline([
+            ('vect', vectorizer),
+            ('clf', naive(alpha=1.0, fit_prior=True))
+        ])
 
-    parameters={
-        'vect__ngram_range': [(1, 1), (1, 2), (1,3), (1,4), (1,5)],
-        'clf__fit_prior': (True, False),
-        'clf__alpha': (1.0, 0.1, 0.5, 2.0, .25, 0.75, 0.002),
-    }
+        parameters={
+            'vect__ngram_range': [(1, 1), (1, 2), (1,3), (1,4), (1,5)],
+            'clf__fit_prior': (True, False),
+            'clf__alpha': (1.0, 0.1, 0.5, 2.0, .25, 0.75, 0.002),
+        }
 
-    gs_clf = GridSearchCV(clf, parameters, cv=5, iid=False, n_jobs=-1)
-    gs_clf.fit(docs_train, y_train)
+        gs_clf = GridSearchCV(clf, parameters, cv=5, iid=False, n_jobs=-1)
+        gs_clf.fit(docs_train, y_train)
 
-    return gs_clf
-    
+        return gs_clf
+    else:
+        return joblib.load("naive_model.pkl")
+
 def fitting3():
+    if not os.path.isfile("svc_model.pkl"):
+        docs_train, docs_test, y_train, y_test = train_test_split(
+            dataset.data, dataset.target, test_size=0.99, random_state=42, shuffle=True)
+        
+        vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
 
-    docs_train, docs_test, y_train, y_test = train_test_split(
-        dataset.data, dataset.target, test_size=0.99, random_state=42, shuffle=True)
-    
-    vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
+        clf = Pipeline([
+            ('vect', vectorizer),
+            ('clf', svc(tol=1e-3, random_state=42,
+                C=1.0, max_iter=-1, gamma='scale', probability=True))
+        ], verbose=True)
 
-    clf = Pipeline([
-        ('vect', vectorizer),
-        ('clf', svc(tol=1e-3, random_state=42,
-            C=1.0, max_iter=-1, gamma='scale', probability=True))
-    ], verbose=True)
+        parameters={
+            'vect__ngram_range': [(1, 1), (1, 2), (1,3), (1,4), (1,5)],
+            'clf__tol':(1e-3, 1e-2, 5e-3, 2e-3, 3e-3,4e-3),
+            'clf__gamma':('auto', 'scale'),
+            'clf__C':(1.0,.1,.2,.3,.4, 0.5, 0.6, 0.7, 0.8, 0.9)
+        }
 
-    parameters={
-        'vect__ngram_range': [(1, 1), (1, 2), (1,3), (1,4), (1,5)],
-        'clf__tol':(1e-3, 1e-2, 5e-3, 2e-3, 3e-3,4e-3),
-        'clf__gamma':('auto', 'scale'),
-        'clf__C':(1.0,.1,.2,.3,.4, 0.5, 0.6, 0.7, 0.8, 0.9)
-    }
+        gs_clf = GridSearchCV(clf, parameters, cv=5, iid=False, n_jobs=-1)
+        gs_clf.fit(docs_train, y_train)
 
-    gs_clf = GridSearchCV(clf, parameters, cv=5, iid=False, n_jobs=-1)
-    gs_clf.fit(docs_train, y_train)
+        return gs_clf
+    else:
+        return joblib.load("svc_model.pkl")
 
-    return gs_clf
 
 def vote(prob1, prob2, prob3):
     """Fonction nous permettant de voter sur le resulat en cas d'absence de choix
