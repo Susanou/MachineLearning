@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 
-"""Build a language detector model
-
-The goal of this exercise is to train a linear classifier on text features
-that represent sequences of up to 3 consecutive characters so as to be
-recognize natural languages by using the frequencies of short character
-sequences as 'fingerprints'.
-
-"""
-# Author: Olivier Grisel <olivier.grisel@ensta.org>
-# License: Simplified BSD
+#  Copyright (c) 2019, Cameron Hochberg
+#  All rights reserved.
+#
+# Author: Cameron Hochberg
+# Date: 07/2019
+# Homepage: https://github.com/Susanou
+# Email: cam.hochberg@gmail.com
+#
 
 import sys
 import matplotlib.pyplot as plt
@@ -240,7 +238,7 @@ if __name__ == "__main__":
     languages_data_folder = args.dataPath
     dataset = load_files(languages_data_folder)
     docs_train, docs_test, y_train, y_test = train_test_split(
-        dataset.data, dataset.target, test_size=0.5, random_state=42, shuffle=True)
+        dataset.data, dataset.target, test_size=0.9, random_state=42, shuffle=True)
     vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
 
     articles = [
