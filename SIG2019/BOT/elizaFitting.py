@@ -27,9 +27,9 @@ from sklearn import metrics
 dataset = load_files('../dataFitting')
 
 def fitting1():     
-    if not os.path.isfile("sgd_model.pkl"):
-        docs_train, docs_test, y_train, y_test = train_test_split(
+    docs_train, docs_test, y_train, y_test = train_test_split(
             dataset.data, dataset.target, test_size=0.99, random_state=42, shuffle=True)
+    if not os.path.isfile("sgd_model.pkl"):
 
         vectorizer = TfidfVectorizer(ngram_range=(1,1), analyzer='word', use_idf=True)
 
@@ -51,7 +51,8 @@ def fitting1():
 
         return gs_clf, dataset.target_names
     else:
-        return joblib.load("sgd_model.pkl")
+        print("getting file")
+        return joblib.load("sgd_model.pkl"), dataset.target_names
 
 def fitting2():
 
@@ -77,6 +78,7 @@ def fitting2():
 
         return gs_clf
     else:
+        print("getting file")
         return joblib.load("naive_model.pkl")
 
 def fitting3():
@@ -90,7 +92,7 @@ def fitting3():
             ('vect', vectorizer),
             ('clf', svc(tol=1e-3, random_state=42,
                 C=1.0, max_iter=-1, gamma='scale', probability=True))
-        ], verbose=True)
+        ])
 
         parameters={
             'vect__ngram_range': [(1, 1), (1, 2), (1,3), (1,4), (1,5)],
@@ -104,6 +106,7 @@ def fitting3():
 
         return gs_clf
     else:
+        print("getting file")
         return joblib.load("svc_model.pkl")
 
 
