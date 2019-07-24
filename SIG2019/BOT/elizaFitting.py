@@ -51,7 +51,6 @@ def fitting1():
 
         return gs_clf, dataset.target_names
     else:
-        print("getting file")
         return joblib.load("sgd_model.pkl"), dataset.target_names
 
 def fitting2():
@@ -78,7 +77,6 @@ def fitting2():
 
         return gs_clf
     else:
-        print("getting file")
         return joblib.load("naive_model.pkl")
 
 def fitting3():
@@ -106,7 +104,6 @@ def fitting3():
 
         return gs_clf
     else:
-        print("getting file")
         return joblib.load("svc_model.pkl")
 
 
