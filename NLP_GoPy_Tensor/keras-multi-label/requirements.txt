@@ -1,0 +1,5 @@
+keras
+tensorflow
+opencv-python
+imutils
+sklearn
