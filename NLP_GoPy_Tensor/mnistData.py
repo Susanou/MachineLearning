@@ -18,7 +18,7 @@ plt.figure()
 plt.imshow(train_img[0])
 plt.colorbar()
 plt.grid(False)
-plt.show()
+#plt.show()      #deactivated for the moment
 
 # Make data range from [0:1] instead of [0:255]
 train_img = train_img / 255.0
@@ -30,6 +30,7 @@ model = keras.Sequential(
     [
     keras.layers.Flatten(input_shape=(28,28)),
     keras.layers.Dense(128, activation='relu'),
+    keras.layers.Dense(50),
     keras.layers.Dense(10)
     ]
 )
@@ -72,7 +73,7 @@ def plot_image(i: int, predictions_array: list, true_label: list, img: list):
     plt.xticks([])
     plt.yticks([])
 
-    plt.imshow(img, cmap=plt.cm.binary)
+    plt.imshow(img, cmap = plt.cm.binary)
 
     predicted_label = np.argmax(predictions_array)
     if predicted_label == true_label:
