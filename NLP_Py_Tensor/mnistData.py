@@ -87,6 +87,17 @@ def plot_image(i: int, predictions_array: list, true_label: list, img: list):
                                     color=color)
 
 def plot_value_array(i: int, predictions_array: list, true_label: list):
+    """Function thats plots the different values of prediction
+
+    Parameters
+    ----------
+    i : int
+        Index of the current values
+    predictions_array : list
+        Array containing the predictions of the current index (percentages)
+    true_label : list
+        True label of the current index
+    """
     predictions_array, true_label = predictions_array, true_label[i]
     plt.grid(False)
     plt.xticks(range(10))
