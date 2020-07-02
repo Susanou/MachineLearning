@@ -18,7 +18,7 @@ plt.figure()
 plt.imshow(train_img[0])
 plt.colorbar()
 plt.grid(False)
-# plt.show()      #deactivated for the moment
+#plt.show()      #deactivated for the moment
 
 # Make data range from [0:1] instead of [0:255]
 train_img = train_img / 255.0
@@ -28,16 +28,15 @@ img_test = img_test / 255.0
 
 model = keras.Sequential(
     [
-        keras.layers.Flatten(input_shape=(28, 28)),
-        keras.layers.Dense(128, activation='relu'),
-        keras.layers.Dense(50),
-        keras.layers.Dense(10)
+    keras.layers.Flatten(input_shape=(28,28)),
+    keras.layers.Dense(128, activation='relu'),
+    keras.layers.Dense(50),
+    keras.layers.Dense(10)
     ]
 )
-model.compile(optimizer='adam',
-              loss=keras.losses.SparseCategoricalCrossentropy(
-                  from_logits=True),
-              metrics=['accuracy'])
+model.compile(  optimizer='adam',
+                loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                metrics=['accuracy'])
 
 # Training model
 model.fit(train_img, train_labels, epochs=10)
@@ -53,7 +52,6 @@ probability_model = tf.keras.Sequential([
 ])
 
 predictions = probability_model.predict(img_test)
-
 
 def plot_image(i: int, predictions_array: list, true_label: list, img: list):
     """Function that plots all the images in the predictions and their 
@@ -75,7 +73,7 @@ def plot_image(i: int, predictions_array: list, true_label: list, img: list):
     plt.xticks([])
     plt.yticks([])
 
-    plt.imshow(img, cmap=plt.cm.binary)
+    plt.imshow(img, cmap = plt.cm.binary)
 
     predicted_label = np.argmax(predictions_array)
     if predicted_label == true_label:
@@ -84,10 +82,9 @@ def plot_image(i: int, predictions_array: list, true_label: list, img: list):
         color = 'red'
 
     plt.xlabel("{} {:2.0f}% ({})".format(class_names[predicted_label],
-                                         100*np.max(predictions_array),
-                                         class_names[true_label]),
-               color=color)
-
+                                    100*np.max(predictions_array),
+                                    class_names[true_label]),
+                                    color=color)
 
 def plot_value_array(i: int, predictions_array: list, true_label: list):
     """Function thats plots the different values of prediction
@@ -112,12 +109,11 @@ def plot_value_array(i: int, predictions_array: list, true_label: list):
     thisplot[predicted_label].set_color('red')
     thisplot[true_label].set_color('blue')
 
-
-plt.figure(figsize=(12, 10))
+plt.figure(figsize=(12,10))
 for i in range(15):
     plt.subplot(5, 6, 2*i+1)
     plot_image(i, predictions[i], labels_test, img_test)
-    plt.subplot(5, 6, 2*i+2)
+    plt.subplot(5,6,2*i+2)
     plot_value_array(i, predictions[i], labels_test)
 plt.tight_layout()
 plt.show()
